@@ -19,7 +19,7 @@ src/
 │       ├── api/
 │       │   └── userApi.ts
 │       ├── utils/
-│       └── index.ts       # feature export 모음
+│       └── index.tsx       # feature export 모음
 ├── shared/                # 재사용 가능한 공통 요소
 │   ├── components/
 │   ├── hooks/
