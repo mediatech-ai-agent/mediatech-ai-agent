@@ -3,8 +3,11 @@
 @tailwind utilities;
 
 @layer base {
+
   /* 기본 박스 설정 */
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     @apply box-border;
   }
 
@@ -14,19 +17,22 @@
   }
 
   body {
-    @apply m-0 p-0 bg-white text-black font-sans leading-normal;
+    @apply p-0 m-0 font-sans leading-normal text-black bg-white;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-    'Noto Color Emoji';
+      Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+      'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+      'Noto Color Emoji';
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   /* 기본 폼 요소 정리 */
-  input, button, textarea, select {
-    @apply text-inherit font-inherit bg-transparent border-none outline-none;
+  input,
+  button,
+  textarea,
+  select {
+    @apply bg-transparent border-none outline-none text-inherit font-inherit;
   }
 
   button {
@@ -37,15 +43,23 @@
     @apply no-underline text-inherit;
   }
 
-  ul, ol {
-    @apply list-none p-0 m-0;
+  ul,
+  ol {
+    @apply p-0 m-0 list-none;
   }
 
-  h1, h2, h3, h4, h5, h6, p {
-    @apply m-0 p-0 font-normal;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p {
+    @apply p-0 m-0 font-normal;
   }
 
-  img, video {
-    @apply max-w-full h-auto block;
+  img,
+  video {
+    @apply block h-auto max-w-full;
   }
 }
