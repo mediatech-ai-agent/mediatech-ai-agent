@@ -1,33 +1,5 @@
-@tailwind base;
-@tailwind components;
+@import 'tailwindcss';
 @tailwind utilities;
-
-@layer base {
-  /* 기본 박스 설정 */
-  *, *::before, *::after {
-    @apply box-border;
-  }
-
-  /* 기본 타이포그래피 설정 */
-  html {
-    @apply text-[16px] antialiased;
-  }
-
-  body {
-    @apply m-0 p-0 bg-white text-black font-sans leading-normal;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-    'Noto Color Emoji';
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* 기본 폼 요소 정리 */
-  input, button, textarea, select {
-    @apply text-inherit font-inherit bg-transparent border-none outline-none;
-  }
 
   button {
     @apply cursor-pointer;
@@ -48,4 +20,3 @@
   img, video {
     @apply max-w-full h-auto block;
   }
-}
