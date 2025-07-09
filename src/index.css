@@ -1,65 +1,17 @@
-@tailwind base;
+@tailwind base; // reset.css 역할(https://tailwindcss.com/docs/preflight)
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
+/* 아래는 선택 사항: 커스텀 스타일이 필요할 때만 추가하세요 */
 
-  /* 기본 박스 설정 */
-  *,
-  *::before,
-  *::after {
-    @apply box-border;
-  }
-
-  /* 기본 타이포그래피 설정 */
-  html {
-    @apply text-[16px] antialiased;
-  }
-
-  body {
-    @apply p-0 m-0 font-sans leading-normal text-black bg-white;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-      Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
-      'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-      'Noto Color Emoji';
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* 기본 폼 요소 정리 */
-  input,
-  button,
-  textarea,
-  select {
-    @apply bg-transparent border-none outline-none text-inherit font-inherit;
-  }
-
-  button {
-    @apply cursor-pointer;
-  }
-
-  a {
-    @apply no-underline text-inherit;
-  }
-
-  ul,
-  ol {
-    @apply p-0 m-0 list-none;
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  p {
-    @apply p-0 m-0 font-normal;
-  }
-
-  img,
-  video {
-    @apply block h-auto max-w-full;
-  }
+/* 예시: 스크롤바 스타일 등 */
+/*
+::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
 }
+::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+*/
