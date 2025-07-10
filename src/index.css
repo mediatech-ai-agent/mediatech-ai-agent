@@ -1,22 +1,22 @@
 @import 'tailwindcss';
 @tailwind utilities;
 
-  button {
-    @apply cursor-pointer;
-  }
+button {
+  @apply cursor-pointer;
+}
 
-  a {
-    @apply no-underline text-inherit;
-  }
+a {
+  @apply no-underline text-inherit;
+}
 
-  ul, ol {
-    @apply list-none p-0 m-0;
-  }
+ul, ol {
+  @apply list-none p-0 m-0;
+}
 
-  h1, h2, h3, h4, h5, h6, p {
-    @apply m-0 p-0 font-normal;
-  }
+h1, h2, h3, h4, h5, h6, p {
+  @apply m-0 p-0 font-normal;
+}
 
-  img, video {
-    @apply max-w-full h-auto block;
-  }
+img, video {
+  @apply max-w-full h-auto block;
+}
