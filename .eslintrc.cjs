@@ -1,10 +1,12 @@
 module.exports = {
-    extends: [
-      'plugin:@typescript-eslint/recommended',
-      'plugin:prettier/recommended'
-    ],
-    plugins: ['@typescript-eslint', 'prettier'],
-    rules: {
-      'prettier/prettier': 'error'
-    }
-  }
+  extends: [
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended',
+    'plugin:react-hooks/recommended',
+    'plugin:@tanstack/eslint-plugin-query/recommended'
+  ],
+  plugins: ['@typescript-eslint', 'prettier'],
+  rules: {
+    'prettier/prettier': 'error',
+  },
+};
