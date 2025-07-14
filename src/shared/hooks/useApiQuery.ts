@@ -1,17 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { 
-  UseQueryOptions, 
-  UseMutationOptions, 
+import type {
+  UseQueryOptions,
+  UseMutationOptions,
   UseQueryResult,
   UseMutationResult,
-  QueryKey
+  QueryKey,
 } from '@tanstack/react-query';
 import type { AxiosRequestConfig, AxiosError } from 'axios';
 import { HttpClient } from '../utils/HttpClient';
 
 // 기본 API 클라이언트 인스턴스 (필요에 따라 설정)
 const defaultApiClient = new HttpClient({
-  baseURL: (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3000/api',
+  baseURL:
+    (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3000/api',
   timeout: 10000,
   retryOptions: {
     retries: 3,
@@ -32,7 +33,7 @@ const defaultApiClient = new HttpClient({
 });
 
 // Query Hook 옵션 타입
-interface ApiQueryOptions<TData, TError = Error> 
+interface ApiQueryOptions<TData, TError = Error>
   extends Omit<UseQueryOptions<TData, TError>, 'queryKey' | 'queryFn'> {
   client?: HttpClient;
   config?: AxiosRequestConfig;
@@ -54,7 +55,7 @@ export function useApiQuery<TData = unknown, TError = Error>(
   options?: ApiQueryOptions<TData, TError>
 ): UseQueryResult<TData, TError> {
   const { client = defaultApiClient, config, ...queryOptions } = options || {};
-  
+
   return useQuery({
     queryKey,
     queryFn: () => client.get<TData>(url, config),
@@ -65,14 +66,22 @@ export function useApiQuery<TData = unknown, TError = Error>(
 /**
  * POST 요청을 위한 Custom Mutation Hook
  */
-export function useApiMutation<TData = unknown, TError = Error, TVariables = unknown>(
+export function useApiMutation<
+  TData = unknown,
+  TError = Error,
+  TVariables = unknown,
+>(
   url: string,
   options?: ApiMutationOptions<TData, TError, TVariables>
 ): UseMutationResult<TData, TError, TVariables> {
-  const { client = defaultApiClient, config, ...mutationOptions } = options || {};
-  
+  const {
+    client = defaultApiClient,
+    config,
+    ...mutationOptions
+  } = options || {};
+
   return useMutation({
-    mutationFn: (variables: TVariables) => 
+    mutationFn: (variables: TVariables) =>
       client.post<TData>(url, variables, config),
     ...mutationOptions,
   });
@@ -81,14 +90,22 @@ export function useApiMutation<TData = unknown, TError = Error, TVariables = unk
 /**
  * PUT 요청을 위한 Custom Mutation Hook
  */
-export function useApiMutationPut<TData = unknown, TError = Error, TVariables = unknown>(
+export function useApiMutationPut<
+  TData = unknown,
+  TError = Error,
+  TVariables = unknown,
+>(
   url: string,
   options?: ApiMutationOptions<TData, TError, TVariables>
 ): UseMutationResult<TData, TError, TVariables> {
-  const { client = defaultApiClient, config, ...mutationOptions } = options || {};
-  
+  const {
+    client = defaultApiClient,
+    config,
+    ...mutationOptions
+  } = options || {};
+
   return useMutation({
-    mutationFn: (variables: TVariables) => 
+    mutationFn: (variables: TVariables) =>
       client.request<TData>({ method: 'PUT', url, data: variables, ...config }),
     ...mutationOptions,
   });
@@ -97,15 +114,28 @@ export function useApiMutationPut<TData = unknown, TError = Error, TVariables = 
 /**
  * DELETE 요청을 위한 Custom Mutation Hook
  */
-export function useApiMutationDelete<TData = unknown, TError = Error, TVariables = unknown>(
+export function useApiMutationDelete<
+  TData = unknown,
+  TError = Error,
+  TVariables = unknown,
+>(
   url: string,
   options?: ApiMutationOptions<TData, TError, TVariables>
 ): UseMutationResult<TData, TError, TVariables> {
-  const { client = defaultApiClient, config, ...mutationOptions } = options || {};
-  
+  const {
+    client = defaultApiClient,
+    config,
+    ...mutationOptions
+  } = options || {};
+
   return useMutation({
-    mutationFn: (variables: TVariables) => 
-      client.request<TData>({ method: 'DELETE', url, data: variables, ...config }),
+    mutationFn: (variables: TVariables) =>
+      client.request<TData>({
+        method: 'DELETE',
+        url,
+        data: variables,
+        ...config,
+      }),
     ...mutationOptions,
   });
 }
@@ -115,23 +145,25 @@ export function useApiMutationDelete<TData = unknown, TError = Error, TVariables
  */
 export function useInvalidateQueries() {
   const queryClient = useQueryClient();
-  
+
   return {
     // 특정 쿼리 키 무효화
     invalidate: (queryKey: QueryKey) => {
       queryClient.invalidateQueries({ queryKey });
     },
-    
+
     // 패턴으로 무효화
     invalidateByPattern: (pattern: QueryKey) => {
-      queryClient.invalidateQueries({ 
-        predicate: (query: any) => {
-          const key = query.queryKey;
-          return pattern.every((item: any, index: number) => key[index] === item);
+      const queries = queryClient.getQueryCache().findAll();
+      queries.forEach((query) => {
+        const key = query.queryKey;
+        const isMatch = pattern.every((item, index) => key[index] === item);
+        if (isMatch) {
+          queryClient.invalidateQueries({ queryKey: key });
         }
       });
     },
-    
+
     // 모든 쿼리 무효화
     invalidateAll: () => {
       queryClient.invalidateQueries();
@@ -144,24 +176,24 @@ export function useInvalidateQueries() {
  */
 export function useCacheUpdater() {
   const queryClient = useQueryClient();
-  
+
   return {
     // 캐시 데이터 설정
     setQueryData: <TData>(queryKey: QueryKey, data: TData) => {
       queryClient.setQueryData(queryKey, data);
     },
-    
+
     // 캐시 데이터 업데이트
     updateQueryData: <TData>(
-      queryKey: QueryKey, 
+      queryKey: QueryKey,
       updater: (oldData: TData | undefined) => TData
     ) => {
       queryClient.setQueryData(queryKey, updater);
     },
-    
+
     // 캐시에서 데이터 가져오기
     getQueryData: <TData>(queryKey: QueryKey): TData | undefined => {
       return queryClient.getQueryData<TData>(queryKey);
     },
   };
-} 
+}
