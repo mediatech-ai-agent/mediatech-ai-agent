@@ -4,7 +4,7 @@ import type { QueryClientConfig } from '@tanstack/react-query';
 // 에러 로깅 함수
 const logError = (error: Error, context: string) => {
   console.error(`[React Query ${context}]:`, error);
-  
+
   // 프로덕션에서는 에러 모니터링 서비스에 전송
   if (import.meta.env.PROD) {
     // 예: Sentry.captureException(error, { tags: { context } });
@@ -43,7 +43,10 @@ export const defaultQueryClientConfig: QueryClientConfig = {
   }),
   mutationCache: new MutationCache({
     onError: (error, variables, context, mutation) => {
-      logError(error as Error, `Mutation ${mutation.options.mutationKey?.join(' > ') || 'unknown'}`);
+      logError(
+        error as Error,
+        `Mutation ${mutation.options.mutationKey?.join(' > ') || 'unknown'}`
+      );
     },
   }),
 };
@@ -91,17 +94,22 @@ export const createDevQueryClient = () => {
     }),
     mutationCache: new MutationCache({
       onError: (error, variables, context, mutation) => {
-        console.group(`🔴 Mutation Error: ${mutation.options.mutationKey?.join(' > ') || 'unknown'}`);
+        console.group(
+          `🔴 Mutation Error: ${mutation.options.mutationKey?.join(' > ') || 'unknown'}`
+        );
         console.error('Error:', error);
         console.log('Variables:', variables);
         console.log('Context:', context);
         console.groupEnd();
       },
       onSuccess: (data, variables, context, mutation) => {
-        console.log(`✅ Mutation Success: ${mutation.options.mutationKey?.join(' > ') || 'unknown'}`, {
-          data,
-          variables,
-        });
+        console.log(
+          `✅ Mutation Success: ${mutation.options.mutationKey?.join(' > ') || 'unknown'}`,
+          {
+            data,
+            variables,
+          }
+        );
       },
     }),
   });
@@ -119,11 +127,6 @@ export const createTestQueryClient = () => {
         retry: false,
       },
     },
-    logger: {
-      log: () => {},
-      warn: () => {},
-      error: () => {},
-    },
   });
 };
 
@@ -131,7 +134,7 @@ export const createTestQueryClient = () => {
 export const debugQueryState = (queryClient: QueryClient) => {
   const cache = queryClient.getQueryCache();
   const queries = cache.getAll();
-  
+
   console.group('🔍 Query Cache State');
   queries.forEach((query) => {
     console.log(`${query.queryKey.join(' > ')}:`, {
@@ -149,7 +152,7 @@ export const debugQueryState = (queryClient: QueryClient) => {
 export const getCacheSize = (queryClient: QueryClient) => {
   const queryCache = queryClient.getQueryCache();
   const mutationCache = queryClient.getMutationCache();
-  
+
   return {
     queryCount: queryCache.getAll().length,
     mutationCount: mutationCache.getAll().length,
@@ -168,9 +171,7 @@ export const invalidateQueriesByPattern = (
 ) => {
   queryClient.invalidateQueries({
     predicate: (query) =>
-      pattern.every((part, index) => 
-        query.queryKey[index] === part
-      ),
+      pattern.every((part, index) => query.queryKey[index] === part),
   });
 };
 
@@ -182,14 +183,14 @@ export const clearAllQueries = (queryClient: QueryClient) => {
 // 오래된 쿼리 정리
 export const cleanupStaleQueries = (queryClient: QueryClient) => {
   const cache = queryClient.getQueryCache();
-  const staleQueries = cache.getAll().filter(query => 
-    query.isStale() && !query.isActive()
-  );
-  
-  staleQueries.forEach(query => {
+  const staleQueries = cache
+    .getAll()
+    .filter((query) => query.isStale() && !query.isActive());
+
+  staleQueries.forEach((query) => {
     cache.remove(query);
   });
-  
+
   return staleQueries.length;
 };
 
@@ -201,7 +202,7 @@ export const setupGlobalErrorHandling = (queryClient: QueryClient) => {
       // 인증 관련 에러 처리
     },
   });
-  
+
   queryClient.setMutationDefaults(['auth', 'logout'], {
     onSuccess: () => {
       // 로그아웃 성공 시 모든 쿼리 정리
@@ -221,4 +222,4 @@ export const devTools = {
 // 전역 변수로 개발 도구 노출 (개발 환경에서만)
 if (import.meta.env.DEV) {
   (window as any).reactQueryDevTools = devTools;
-} 
+}
