@@ -221,5 +221,7 @@ export const devTools = {
 
 // 전역 변수로 개발 도구 노출 (개발 환경에서만)
 if (import.meta.env.DEV) {
-  (window as any).reactQueryDevTools = devTools;
+  (
+    window as unknown as { reactQueryDevTools: typeof devTools }
+  ).reactQueryDevTools = devTools;
 }

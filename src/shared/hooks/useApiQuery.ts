@@ -12,7 +12,8 @@ import { HttpClient } from '../utils/HttpClient';
 // 기본 API 클라이언트 인스턴스 (필요에 따라 설정)
 const defaultApiClient = new HttpClient({
   baseURL:
-    (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3000/api',
+    (import.meta as unknown as { env: { VITE_API_BASE_URL: string } }).env
+      ?.VITE_API_BASE_URL || 'http://localhost:3000/api',
   timeout: 10000,
   retryOptions: {
     retries: 3,
