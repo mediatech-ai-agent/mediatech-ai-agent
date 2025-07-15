@@ -166,7 +166,7 @@ export function QueryStateRenderer<T>({
     return <>{emptyFallback || <EmptyFallback />}</>;
   }
 
-  return <>{children(data)}</>;
+  return children(data);
 }
 
 // 무한 스크롤 상태 렌더러
