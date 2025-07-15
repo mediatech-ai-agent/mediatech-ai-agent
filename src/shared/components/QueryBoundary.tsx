@@ -93,7 +93,13 @@ export const QueryBoundary = ({
   <QueryErrorResetBoundary>
     {({ reset }) => (
       <ErrorBoundary
-        FallbackComponent={fallback ? () => <>{fallback}</> : ErrorFallback}
+        FallbackComponent={
+          fallback
+            ? ({ error, resetErrorBoundary }) => {
+              return typeof fallback === 'function' ? React.createElement(fallback, { error, resetErrorBoundary }) : <>{fallback}</>;
+            }
+            : ErrorFallback
+        }
         onError={onError}
         onReset={reset}
       >
