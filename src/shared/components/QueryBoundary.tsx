@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import React, { type ReactNode, type PropsWithChildren } from 'react';
 import { QueryErrorResetBoundary } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -81,16 +81,15 @@ export const EmptyFallback: React.FC<EmptyFallbackProps> = ({
 
 // Query Boundary 컴포넌트
 interface QueryBoundaryProps {
-  children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error) => void;
 }
 
-export const QueryBoundary: React.FC<QueryBoundaryProps> = ({
-  children,
+export const QueryBoundary = ({
   fallback,
-  onError
-}) => (
+  onError,
+  children
+}: PropsWithChildren<QueryBoundaryProps>) => (
   <QueryErrorResetBoundary>
     {({ reset }) => (
       <ErrorBoundary
