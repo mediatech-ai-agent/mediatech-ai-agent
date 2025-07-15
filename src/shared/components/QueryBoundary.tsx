@@ -8,21 +8,21 @@ interface ErrorFallbackProps {
   resetErrorBoundary: () => void;
 }
 
-export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ 
-  error, 
-  resetErrorBoundary 
+export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
+  error,
+  resetErrorBoundary
 }) => (
   <div className="min-h-[200px] flex items-center justify-center">
-    <div className="text-center p-6 bg-red-50 rounded-lg border border-red-200">
-      <h2 className="text-lg font-semibold text-red-800 mb-2">
+    <div className="p-6 text-center bg-red-50 rounded-lg border border-red-200">
+      <h2 className="mb-2 text-lg font-semibold text-red-800">
         문제가 발생했습니다
       </h2>
-      <p className="text-red-600 mb-4">
+      <p className="mb-4 text-red-600">
         {error.message || '알 수 없는 오류가 발생했습니다'}
       </p>
       <button
         onClick={resetErrorBoundary}
-        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+        className="px-4 py-2 text-white bg-red-600 rounded transition-colors hover:bg-red-700"
       >
         다시 시도
       </button>
@@ -35,12 +35,12 @@ interface LoadingFallbackProps {
   message?: string;
 }
 
-export const LoadingFallback: React.FC<LoadingFallbackProps> = ({ 
-  message = '로딩 중...' 
+export const LoadingFallback: React.FC<LoadingFallbackProps> = ({
+  message = '로딩 중...'
 }) => (
   <div className="min-h-[200px] flex items-center justify-center">
     <div className="text-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <div className="mx-auto mb-4 w-8 h-8 rounded-full border-b-2 border-blue-600 animate-spin"></div>
       <p className="text-gray-600">{message}</p>
     </div>
   </div>
@@ -55,22 +55,22 @@ interface EmptyFallbackProps {
   };
 }
 
-export const EmptyFallback: React.FC<EmptyFallbackProps> = ({ 
+export const EmptyFallback: React.FC<EmptyFallbackProps> = ({
   message = '데이터가 없습니다',
-  action 
+  action
 }) => (
   <div className="min-h-[200px] flex items-center justify-center">
-    <div className="text-center p-6">
-      <div className="text-gray-400 mb-4">
-        <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="p-6 text-center">
+      <div className="mb-4 text-gray-400">
+        <svg className="mx-auto w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       </div>
-      <p className="text-gray-600 mb-4">{message}</p>
+      <p className="mb-4 text-gray-600">{message}</p>
       {action && (
         <button
           onClick={action.onClick}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 text-white bg-blue-600 rounded transition-colors hover:bg-blue-700"
         >
           {action.label}
         </button>
@@ -126,7 +126,7 @@ export function ConditionalRender<T>({
   if (!condition) {
     return <>{fallback}</>;
   }
-  
+
   return <>{data ? children(data) : fallback}</>;
 }
 
@@ -157,15 +157,15 @@ export function QueryStateRenderer<T>({
   if (isLoading) {
     return <>{loadingFallback || <LoadingFallback />}</>;
   }
-  
+
   if (isError) {
-    return <>{errorFallback || <ErrorFallback error={error!} resetErrorBoundary={() => {}} />}</>;
+    return <>{errorFallback || <ErrorFallback error={error!} resetErrorBoundary={() => { }} />}</>;
   }
-  
+
   if (isEmpty || !data) {
     return <>{emptyFallback || <EmptyFallback />}</>;
   }
-  
+
   return <>{children(data)}</>;
 }
 
@@ -200,20 +200,20 @@ export function InfiniteQueryRenderer<T>({
   if (isLoading) {
     return <>{loadingFallback || <LoadingFallback />}</>;
   }
-  
+
   if (isError) {
-    return <>{errorFallback || <ErrorFallback error={error!} resetErrorBoundary={() => {}} />}</>;
+    return <>{errorFallback || <ErrorFallback error={error!} resetErrorBoundary={() => { }} />}</>;
   }
-  
+
   if (!data || data.length === 0) {
     return <>{emptyFallback || <EmptyFallback />}</>;
   }
-  
+
   const loadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   };
-  
+
   return <>{children(data, loadMore)}</>;
 } 
