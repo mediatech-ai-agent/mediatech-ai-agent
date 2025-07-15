@@ -31,11 +31,12 @@ export interface EnvironmentConfig {
     level: LogLevel;
     enableConsole: boolean;
   };
-  external: {
-    sentryDsn?: string;
-    googleAnalyticsId?: string;
-    hotjarId?: string;
-  };
+  // TODO: 외부 서비스 연결 필요하면 추가
+  //   external: {
+  //     sentryDsn?: string;
+  //     googleAnalyticsId?: string;
+  //     hotjarId?: string;
+  //   };
 }
 
 // 기본 설정
@@ -62,11 +63,12 @@ const defaultConfig: EnvironmentConfig = {
     level: (import.meta.env.VITE_LOG_LEVEL as LogLevel) || 'info',
     enableConsole: import.meta.env.DEV,
   },
-  external: {
-    sentryDsn: import.meta.env.VITE_SENTRY_DSN,
-    googleAnalyticsId: import.meta.env.VITE_GOOGLE_ANALYTICS_ID,
-    hotjarId: import.meta.env.VITE_HOTJAR_ID,
-  },
+  // TODO: 외부 서비스 연결 필요하면 추가
+  //   external: {
+  //     sentryDsn: import.meta.env.VITE_SENTRY_DSN,
+  //     googleAnalyticsId: import.meta.env.VITE_GOOGLE_ANALYTICS_ID,
+  //     hotjarId: import.meta.env.VITE_HOTJAR_ID,
+  //   },
 };
 
 // 환경별 설정 오버라이드
