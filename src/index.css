@@ -1,6 +1,14 @@
 @import 'tailwindcss';
 @tailwind utilities;
 
+body {
+  background-image: url('./assets/bg_main.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
 button {
   @apply cursor-pointer;
 }
@@ -9,14 +17,22 @@ a {
   @apply no-underline text-inherit;
 }
 
-ul, ol {
+ul,
+ol {
   @apply list-none p-0 m-0;
 }
 
-h1, h2, h3, h4, h5, h6, p {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
   @apply m-0 p-0 font-normal;
 }
 
-img, video {
+img,
+video {
   @apply max-w-full h-auto block;
 }
