@@ -8,6 +8,12 @@ import HistoryItem from './HistoryItem';
 export interface SideMenuProps {
   title: string;
   headerIcon: string;
+  menuHeaderItems: Array<{
+    id: string;
+    title: string;
+    icon: string;
+    iconBgColor?: string;
+  }>;
   menuItems: Array<{
     id: string;
     title: string;
