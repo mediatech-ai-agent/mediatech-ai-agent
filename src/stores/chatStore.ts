@@ -1,7 +1,63 @@
 import { create } from 'zustand';
+import { createStorageManager } from '@/shared/utils/localStorage';
 
 // 빈 배열 상수 (참조 안정성을 위해)
 const EMPTY_MESSAGES: ChatMessage[] = [];
+
+// 채팅 세션 전용 스토리지
+const chatStorage = createStorageManager('chat-sessions');
+const SESSIONS_STORAGE_KEY = 'sessions';
+
+// 세션 저장 디바운스를 위한 타이머
+let saveSessionsTimer: NodeJS.Timeout | null = null;
+
+// 세션을 로컬 스토리지에 저장하는 함수 (디바운스 적용)
+const saveSessions = (sessions: ChatSession[]) => {
+  // 기존 타이머 클리어
+  if (saveSessionsTimer) {
+    clearTimeout(saveSessionsTimer);
+  }
+  
+  // 500ms 후에 저장 (디바운스)
+  saveSessionsTimer = setTimeout(() => {
+    try {
+      chatStorage.set(SESSIONS_STORAGE_KEY, sessions);
+    } catch (error) {
+      console.error('Failed to save sessions to localStorage:', error);
+    }
+  }, 500);
+};
+
+// 로컬 스토리지에서 세션을 복원하는 함수
+const loadSessions = (): ChatSession[] => {
+  try {
+    const sessions = chatStorage.get<ChatSession[]>(SESSIONS_STORAGE_KEY);
+    if (sessions && Array.isArray(sessions)) {
+      // Date 객체 복원
+      return sessions.map(session => ({
+        ...session,
+        createdAt: new Date(session.createdAt),
+        updatedAt: new Date(session.updatedAt),
+        messages: session.messages.map(message => ({
+          ...message,
+          timestamp: new Date(message.timestamp)
+        }))
+      }));
+    }
+  } catch (error) {
+    console.error('Failed to load sessions from localStorage:', error);
+  }
+  return [];
+};
+
+// 브라우저 이탈 시 즉시 저장
+const saveSessionsImmediately = (sessions: ChatSession[]) => {
+  try {
+    chatStorage.set(SESSIONS_STORAGE_KEY, sessions);
+  } catch (error) {
+    console.error('Failed to save sessions immediately:', error);
+  }
+};
 
 // 메시지 타입 정의
 export type MessageType = 'text' | 'image' | 'file' | 'code' | 'markdown';
@@ -95,7 +151,7 @@ interface ChatActions {
 
 export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   currentSession: null,
-  sessions: [],
+  sessions: loadSessions(), // 초기화 시 로컬 스토리지에서 복원
   currentAgentMode: null,
   isLoading: false,
   isAiResponding: false,
@@ -109,10 +165,16 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       updatedAt: new Date(),
     };
 
-    set((state) => ({
-      sessions: [newSession, ...state.sessions],
-      currentSession: newSession,
-    }));
+    set((state) => {
+      const updatedSessions = [newSession, ...state.sessions];
+      // 로컬 스토리지에 저장 (디바운스 적용)
+      saveSessions(updatedSessions);
+      
+      return {
+        sessions: updatedSessions,
+        currentSession: newSession,
+      };
+    });
   },
 
   selectSession: (sessionId: string) => {
@@ -154,12 +216,19 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
           : currentSession.title,
     };
 
-    set((state) => ({
-      currentSession: updatedSession,
-      sessions: state.sessions.map((session) =>
+    set((state) => {
+      const updatedSessions = state.sessions.map((session) =>
         session.id === currentSession.id ? updatedSession : session
-      ),
-    }));
+      );
+      
+      // 로컬 스토리지에 저장 (디바운스 적용)
+      saveSessions(updatedSessions);
+      
+      return {
+        currentSession: updatedSession,
+        sessions: updatedSessions,
+      };
+    });
   },
 
   addUserMessage: (
@@ -207,19 +276,42 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   },
 
   updateSessionTitle: (sessionId: string, title: string) => {
-    set((state) => ({
-      sessions: state.sessions.map((session) =>
+    set((state) => {
+      const updatedSessions = state.sessions.map((session) =>
         session.id === sessionId
           ? { ...session, title, updatedAt: new Date() }
           : session
-      ),
-      currentSession:
-        state.currentSession?.id === sessionId
-          ? { ...state.currentSession, title, updatedAt: new Date() }
-          : state.currentSession,
-    }));
+      );
+      
+      // 로컬 스토리지에 저장
+      saveSessions(updatedSessions);
+      
+      return {
+        sessions: updatedSessions,
+        currentSession:
+          state.currentSession?.id === sessionId
+            ? { ...state.currentSession, title, updatedAt: new Date() }
+            : state.currentSession,
+      };
+    });
   },
 }));
+
+// 브라우저 이탈 시 세션 저장을 위한 이벤트 리스너 등록
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    const currentSessions = useChatStore.getState().sessions;
+    saveSessionsImmediately(currentSessions);
+  });
+  
+  // 페이지 숨김 시에도 저장 (모바일 브라우저 대응)
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      const currentSessions = useChatStore.getState().sessions;
+      saveSessionsImmediately(currentSessions);
+    }
+  });
+}
 
 // 현재 세션의 메시지들을 가져오는 셀렉터
 export const useCurrentMessages = () => {
