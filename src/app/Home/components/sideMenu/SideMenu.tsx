@@ -41,7 +41,8 @@ const SideMenu: React.FC<SideMenuProps> = ({
 }) => {
   return (
     <div
-      className="w-[280px] h-[810px] relative apple-liquid-glass"
+      className="w-[280px] h-[810px] relative bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${bgMenuFull})` }}
     >
       <div className="p-6 pt-8">
         <MenuHeader title={title} icon={headerIcon} />
