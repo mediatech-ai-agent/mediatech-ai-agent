@@ -3,13 +3,13 @@ import { useChatStore } from '@/stores/chatStore.ts';
 import { getAgentMessage, isValidAgentType, type AgentType } from '@/shared/utils/common';
 
 const AgentCardGrid = () => {
-  const { addAiMessage } = useChatStore();
+  const { addAiMessageWithAgent } = useChatStore();
 
   const handleAgentCardClick = (agentType: string) => {
     if (isValidAgentType(agentType)) {
       const aiMessage = getAgentMessage(agentType as AgentType);
       if (aiMessage) {
-        addAiMessage(aiMessage);
+        addAiMessageWithAgent(aiMessage, agentType as AgentType);
       }
     }
   };

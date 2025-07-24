@@ -26,13 +26,13 @@ export const MENU_ITEMS = [
   ];
 
 export const useSidebarController = () => {
-  const { addAiMessage } = useChatStore();
+  const { addAiMessageWithAgent } = useChatStore();
 
   const handleMenuClick = (id: string) => {
     if (isValidAgentType(id)) {
       const aiMessage = getAgentMessage(id as AgentType);
       if (aiMessage) {
-        addAiMessage(aiMessage);
+        addAiMessageWithAgent(aiMessage, id as AgentType);
       }
     }
   }

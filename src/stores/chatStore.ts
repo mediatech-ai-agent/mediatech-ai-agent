@@ -9,6 +9,9 @@ export type MessageType = 'text' | 'image' | 'file' | 'code' | 'markdown';
 // 메시지 발신자 타입
 export type MessageSender = 'user' | 'ai';
 
+// 에이전트 모드 타입 정의
+export type AgentMode = 'jira' | 'cr' | 'policy' | 'person' | null;
+
 // 개별 메시지 인터페이스
 export interface ChatMessage {
   id: string;
@@ -40,6 +43,8 @@ interface ChatState {
   currentSession: ChatSession | null;
   // 모든 채팅 세션들
   sessions: ChatSession[];
+  // 현재 에이전트 모드
+  currentAgentMode: AgentMode;
   // 로딩 상태
   isLoading: boolean;
   // AI 응답 대기 상태
@@ -71,6 +76,15 @@ interface ChatActions {
     type?: MessageType,
     metadata?: ChatMessage['metadata']
   ) => void;
+  // 에이전트 모드와 함께 AI 메시지 추가
+  addAiMessageWithAgent: (
+    content: string,
+    agentMode: AgentMode,
+    type?: MessageType,
+    metadata?: ChatMessage['metadata']
+  ) => void;
+  // 에이전트 모드 설정
+  setAgentMode: (mode: AgentMode) => void;
   // AI 응답 상태 설정
   setAiResponding: (isResponding: boolean) => void;
   // 로딩 상태 설정
@@ -82,6 +96,7 @@ interface ChatActions {
 export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   currentSession: null,
   sessions: [],
+  currentAgentMode: null,
   isLoading: false,
   isAiResponding: false,
 
@@ -163,6 +178,22 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     get().addMessage(content, 'ai', type, metadata);
   },
 
+  addAiMessageWithAgent: (
+    content: string,
+    agentMode: AgentMode,
+    type: MessageType = 'text',
+    metadata?: ChatMessage['metadata']
+  ) => {
+    // 에이전트 모드 설정
+    set({ currentAgentMode: agentMode });
+    // AI 메시지 추가
+    get().addMessage(content, 'ai', type, metadata);
+  },
+
+  setAgentMode: (mode: AgentMode) => {
+    set({ currentAgentMode: mode });
+  },
+
   setAiResponding: (isResponding: boolean) => {
     set({ isAiResponding: isResponding });
   },
@@ -201,4 +232,9 @@ export const useChatSessions = () => {
 // 현재 세션 정보를 가져오는 셀렉터
 export const useCurrentSession = () => {
   return useChatStore((state) => state.currentSession);
+};
+
+// 현재 에이전트 모드를 가져오는 셀렉터
+export const useCurrentAgentMode = () => {
+  return useChatStore((state) => state.currentAgentMode);
 };
