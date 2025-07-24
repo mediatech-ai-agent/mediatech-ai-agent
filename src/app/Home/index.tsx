@@ -2,44 +2,36 @@ import ChatInput from './components/ChatInput';
 import AgentCardGrid from './components/AgentCardGrid';
 import ChatMessages from './components/ChatMessages';
 import { SideMenu } from './components/sideMenu';
-import { useCurrentMessages } from '@/stores/chatStore.ts';
-import { useSidebarController, MENU_ITEMS, MENU_HEADER_ITEMS } from '@/shared/utils/useSidebarController';
+import { useCurrentMessages, useChatSessions } from '@/stores/chatStore.ts';
+import { useSidebarController, MENU_ITEMS, MENU_HEADER_ITEMS, getIconByAgentMode } from '@/shared/utils/useSidebarController';
 import { ICON_PATH } from '@/shared/constants';
 
 const SIDEBAR_WIDTH = 280;
 
 const Home = () => {
   const messages = useCurrentMessages();
+  const sessions = useChatSessions();
   const { handleMenuClick, handleHistoryClick } = useSidebarController();
 
-  // TODO: store 이관 및 local storage 저장을 위한 로직 추가
-  const historyItems = [
-    {
-      id: 'history-1',
-      title: '일반 질문에 대한 요약',
-      icon: ICON_PATH.SIDE_MENU.NEW_CHAT,
-    },
-    {
-      id: 'history-2',
-      title: 'Jira 요약하기',
-      icon: ICON_PATH.SIDE_MENU.JIRA,
-    },
-    {
-      id: 'history-3',
-      title: 'CR 생성하기',
-      icon: ICON_PATH.SIDE_MENU.CR,
-    },
-    {
-      id: 'history-4',
-      title: '정책 문의하기',
-      icon: ICON_PATH.SIDE_MENU.POLICY,
-    },
-    {
-      id: 'history-5',
-      title: '담당자 찾기',
-      icon: ICON_PATH.SIDE_MENU.PERSON,
-    },
-  ]
+  // 세션에서 첫 번째 사용자 메시지를 17자까지 자른 제목 생성
+  const getSessionTitle = (session: typeof sessions[0]): string => {
+    const firstUserMessage = session.messages.find(message => message.sender === 'user');
+    if (firstUserMessage) {
+      const originalTitle = firstUserMessage.content;
+      if (originalTitle.length > 17) {
+        return `${originalTitle.slice(0, 17)}...`;
+      }
+      return originalTitle;
+    }
+    return session.title; // 사용자 메시지가 없으면 기본 제목 사용
+  };
+
+  // sessions 데이터를 historyItems 형태로 변환
+  const historyItems = sessions.map(session => ({
+    id: session.id,
+    title: getSessionTitle(session),
+    icon: getIconByAgentMode(session.agentMode),
+  }));
   return (
     <div className="overflow-hidden relative min-h-screen">
       <aside className={`fixed top-1/2 flex-col items-center -translate-y-1/2 left-[60px] left-side-menu w-[${SIDEBAR_WIDTH}px] h-[810px]`}>

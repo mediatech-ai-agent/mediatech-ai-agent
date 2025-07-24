@@ -33,9 +33,10 @@ const loadSessions = (): ChatSession[] => {
   try {
     const sessions = chatStorage.get<ChatSession[]>(SESSIONS_STORAGE_KEY);
     if (sessions && Array.isArray(sessions)) {
-      // Date 객체 복원
+      // Date 객체 복원 및 agentMode 기본값 설정
       return sessions.map(session => ({
         ...session,
+        agentMode: session.agentMode ?? null, // 기존 세션에 agentMode가 없으면 null로 설정
         createdAt: new Date(session.createdAt),
         updatedAt: new Date(session.updatedAt),
         messages: session.messages.map(message => ({
@@ -89,6 +90,7 @@ export interface ChatSession {
   id: string;
   title: string;
   messages: ChatMessage[];
+  agentMode: AgentMode; // 해당 세션의 에이전트 모드
   createdAt: Date;
   updatedAt: Date;
 }
@@ -157,10 +159,12 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   isAiResponding: false,
 
   createSession: () => {
+    const { currentAgentMode } = get();
     const newSession: ChatSession = {
       id: `session_${Date.now()}`,
       title: '새로운 대화',
       messages: [],
+      agentMode: currentAgentMode,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -180,7 +184,10 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   selectSession: (sessionId: string) => {
     const session = get().sessions.find((s) => s.id === sessionId);
     if (session) {
-      set({ currentSession: session });
+      set({ 
+        currentSession: session,
+        currentAgentMode: session.agentMode // 세션의 agentMode를 현재 상태로 설정
+      });
     }
   },
 
@@ -253,11 +260,11 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     type: MessageType = 'text',
     metadata?: ChatMessage['metadata']
   ) => {
-    // 새로운 세션 생성
-    get().createSession();
-    
-    // 에이전트 모드 설정
+    // 에이전트 모드 먼저 설정
     set({ currentAgentMode: agentMode });
+    
+    // 새로운 세션 생성 (현재 agentMode가 세션에 저장됨)
+    get().createSession();
     
     // AI 메시지 추가
     get().addMessage(content, 'ai', type, metadata);
@@ -290,7 +297,12 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
         sessions: updatedSessions,
         currentSession:
           state.currentSession?.id === sessionId
-            ? { ...state.currentSession, title, updatedAt: new Date() }
+            ? { 
+                ...state.currentSession, 
+                title, 
+                updatedAt: new Date(),
+                agentMode: state.currentSession.agentMode // agentMode 유지
+              }
             : state.currentSession,
       };
     });

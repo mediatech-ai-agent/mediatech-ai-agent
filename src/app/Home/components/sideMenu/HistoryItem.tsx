@@ -18,7 +18,7 @@ const HistoryItem: React.FC<HistoryItemProps> = ({
       className="flex items-center w-[232px] h-10 cursor-pointer hover:opacity-80"
       onClick={onClick}
     >
-      <div className="w-11 h-10 flex items-center justify-center relative">
+      <div className="flex relative justify-center items-center w-11 h-10">
         {iconBgColor !== 'transparent' && (
           <div
             className="absolute w-[37px] h-[34px] rounded"

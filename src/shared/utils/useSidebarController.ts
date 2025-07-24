@@ -1,4 +1,4 @@
-import { useChatStore } from '@/stores/chatStore.ts';
+import { useChatStore, type AgentMode } from '@/stores/chatStore.ts';
 import { ICON_PATH } from '@/shared/constants';
 import { getAgentMessage, isValidAgentType, type AgentType } from '@/shared/utils/common';
 
@@ -33,8 +33,24 @@ export const MENU_ITEMS = [
     },
   ];
 
+// 에이전트 모드에 따른 아이콘 매핑
+export const getIconByAgentMode = (agentMode: AgentMode): string => {
+  switch (agentMode) {
+    case 'jira':
+      return ICON_PATH.SIDE_MENU.JIRA;
+    case 'cr':
+      return ICON_PATH.SIDE_MENU.CR;
+    case 'policy':
+      return ICON_PATH.SIDE_MENU.POLICY;
+    case 'person':
+      return ICON_PATH.SIDE_MENU.PERSON;
+    default:
+      return ICON_PATH.SIDE_MENU.NEW_CHAT;
+  }
+};
+
 export const useSidebarController = () => {
-  const { addAiMessageWithAgent } = useChatStore();
+  const { addAiMessageWithAgent, selectSession } = useChatStore();
 
   const handleMenuClick = (id: string) => {
     if (id === 'new-chat') {
@@ -50,8 +66,8 @@ export const useSidebarController = () => {
     }
   }
 
-  const handleHistoryClick = (id: string) => {
-    console.log('History clicked:', id);
+  const handleHistoryClick = (sessionId: string) => {
+    selectSession(sessionId);
   };
 
   return {
