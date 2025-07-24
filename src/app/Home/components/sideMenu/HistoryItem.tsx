@@ -27,7 +27,7 @@ const HistoryItem: React.FC<HistoryItemProps> = ({
         )}
         <img src={icon} alt={title} className="relative z-10" />
       </div>
-      <span className="ml-3 text-white text-sm font-normal leading-6 font-['Pretendard'] opacity-60">
+      <span className="ml-3 text-white text-sm font-normal leading-6 font-['Pretendard'] opacity-60 flex-1 overflow-hidden whitespace-nowrap text-ellipsis text-left">
         {title}
       </span>
     </div>

@@ -78,7 +78,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
 
         <SectionHeader title="이전 대화" />
 
-        <div className="mt-4">
+        <div className="overflow-y-auto mt-4 max-h-80 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
           {historyItems.map((item) => (
             <HistoryItem
               key={item.id}
