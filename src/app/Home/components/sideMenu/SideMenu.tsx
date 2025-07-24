@@ -4,6 +4,7 @@ import MenuItem from './MenuItem';
 import MenuDivider from './MenuDivider';
 import SectionHeader from './SectionHeader';
 import HistoryItem from './HistoryItem';
+import bgMenuFull from '@/assets/bg_menu_full.png';
 
 export interface SideMenuProps {
   title: string;
@@ -48,7 +49,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
         <MenuHeader title={title} icon={headerIcon} />
 
         <div className="mt-6">
-          {menuHeaderItems.map((item, index) => (
+          {menuHeaderItems.map((item) => (
             <MenuItem
               key={item.id}
               title={item.title}
@@ -61,8 +62,8 @@ const SideMenu: React.FC<SideMenuProps> = ({
 
         <MenuDivider />
 
-        <div className="mt-6">
-          {menuItems.map((item, index) => (
+        <div>
+          {menuItems.map((item) => (
             <MenuItem
               key={item.id}
               title={item.title}
@@ -78,7 +79,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
         <SectionHeader title="이전 대화" />
 
         <div className="mt-4">
-          {historyItems.map((item, index) => (
+          {historyItems.map((item) => (
             <HistoryItem
               key={item.id}
               title={item.title}

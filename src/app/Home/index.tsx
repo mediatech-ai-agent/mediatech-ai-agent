@@ -3,19 +3,14 @@ import AgentCardGrid from './components/AgentCardGrid';
 import ChatMessages from './components/ChatMessages';
 import { SideMenu } from './components/sideMenu';
 import { useCurrentMessages } from '@/stores/chatStore.ts';
+import { useSidebarController, MENU_ITEMS } from '@/shared/utils/useSidebarController';
 import { ICON_PATH } from '@/shared/constants';
 
-const SIDEBAR_WIDTH = 240;
+const SIDEBAR_WIDTH = 280;
 
 const Home = () => {
   const messages = useCurrentMessages();
-  const handleMenuClick = (id: string) => {
-    console.log('Menu clicked:', id);
-  };
-
-  const handleHistoryClick = (id: string) => {
-    console.log('History clicked:', id);
-  };
+  const { handleMenuClick, handleHistoryClick } = useSidebarController();
 
   // TODO: store 이관
   const menuHeaderItems = [
@@ -23,30 +18,6 @@ const Home = () => {
       id: 'new-chat',
       title: '새로운 대화하기',
       icon: ICON_PATH.SIDE_MENU.NEW_CHAT,
-    },
-  ];
-
-  // TODO: store 이관
-  const menuItems = [
-    {
-      id: 'jira',
-      title: 'Jira 요약하기',
-      icon: ICON_PATH.SIDE_MENU.JIRA,
-    },
-    {
-      id: 'cr',
-      title: 'CR 생성하기',
-      icon: ICON_PATH.SIDE_MENU.CR,
-    },
-    {
-      id: 'policy',
-      title: '정책 문의하기',
-      icon: ICON_PATH.SIDE_MENU.POLICY,
-    },
-    {
-      id: 'person',
-      title: '담당자 찾기',
-      icon: ICON_PATH.SIDE_MENU.PERSON,
     },
   ];
 
@@ -80,12 +51,12 @@ const Home = () => {
   ]
   return (
     <div className="overflow-hidden relative min-h-screen">
-      <aside className={`fixed items-center top-flex-col left-side-menu w-[${SIDEBAR_WIDTH}px] h-[810px]`}>
+      <aside className={`fixed top-1/2 flex-col items-center -translate-y-1/2 left-[60px] left-side-menu w-[${SIDEBAR_WIDTH}px] h-[810px]`}>
         <SideMenu
-          title="B tv Agent"
+          title="B tv GPT"
           headerIcon={ICON_PATH.SIDE_MENU.MENU}
           menuHeaderItems={menuHeaderItems}
-          menuItems={menuItems}
+          menuItems={MENU_ITEMS}
           historyItems={historyItems}
           onMenuItemClick={handleMenuClick}
           onHistoryItemClick={handleHistoryClick}
