@@ -143,7 +143,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       metadata,
     };
 
-    const updatedSession: ChatSession = {
+    const updatedSession: ChatSession = {     
       ...currentSession,
       messages: [...currentSession.messages, newMessage],
       updatedAt: new Date(),
@@ -184,8 +184,12 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     type: MessageType = 'text',
     metadata?: ChatMessage['metadata']
   ) => {
+    // 새로운 세션 생성
+    get().createSession();
+    
     // 에이전트 모드 설정
     set({ currentAgentMode: agentMode });
+    
     // AI 메시지 추가
     get().addMessage(content, 'ai', type, metadata);
   },
