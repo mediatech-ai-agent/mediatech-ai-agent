@@ -2,6 +2,14 @@ import { useChatStore } from '@/stores/chatStore.ts';
 import { ICON_PATH } from '@/shared/constants';
 import { getAgentMessage, isValidAgentType, type AgentType } from '@/shared/utils/common';
 
+export const MENU_HEADER_ITEMS = [
+  {
+    id: 'new-chat',
+    title: '새로운 대화하기',
+    icon: ICON_PATH.SIDE_MENU.NEW_CHAT,
+  },
+];
+
 export const MENU_ITEMS = [
     {
       id: 'jira',
@@ -29,6 +37,11 @@ export const useSidebarController = () => {
   const { addAiMessageWithAgent } = useChatStore();
 
   const handleMenuClick = (id: string) => {
+    if (id === 'new-chat') {
+      addAiMessageWithAgent('새로운 대화를 시작합니다.', null);
+      return;
+    }
+
     if (isValidAgentType(id)) {
       const aiMessage = getAgentMessage(id as AgentType);
       if (aiMessage) {

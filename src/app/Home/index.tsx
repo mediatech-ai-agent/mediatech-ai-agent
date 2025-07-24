@@ -3,7 +3,7 @@ import AgentCardGrid from './components/AgentCardGrid';
 import ChatMessages from './components/ChatMessages';
 import { SideMenu } from './components/sideMenu';
 import { useCurrentMessages } from '@/stores/chatStore.ts';
-import { useSidebarController, MENU_ITEMS } from '@/shared/utils/useSidebarController';
+import { useSidebarController, MENU_ITEMS, MENU_HEADER_ITEMS } from '@/shared/utils/useSidebarController';
 import { ICON_PATH } from '@/shared/constants';
 
 const SIDEBAR_WIDTH = 280;
@@ -11,15 +11,6 @@ const SIDEBAR_WIDTH = 280;
 const Home = () => {
   const messages = useCurrentMessages();
   const { handleMenuClick, handleHistoryClick } = useSidebarController();
-
-  // TODO: store 이관
-  const menuHeaderItems = [
-    {
-      id: 'new-chat',
-      title: '새로운 대화하기',
-      icon: ICON_PATH.SIDE_MENU.NEW_CHAT,
-    },
-  ];
 
   // TODO: store 이관 및 local storage 저장을 위한 로직 추가
   const historyItems = [
@@ -55,7 +46,7 @@ const Home = () => {
         <SideMenu
           title="B tv GPT"
           headerIcon={ICON_PATH.SIDE_MENU.MENU}
-          menuHeaderItems={menuHeaderItems}
+          menuHeaderItems={MENU_HEADER_ITEMS}
           menuItems={MENU_ITEMS}
           historyItems={historyItems}
           onMenuItemClick={handleMenuClick}
