@@ -15,10 +15,10 @@ const MenuItem: React.FC<MenuItemProps> = ({
 }) => {
   return (
     <div
-      className="flex items-center w-[232px] h-11 cursor-pointer hover:opacity-80"
+      className="flex items-center w-[232px] h-[44px] my-2 cursor-pointer hover:opacity-80"
       onClick={onClick}
     >
-      <div className="w-11 h-11 flex items-center justify-center relative">
+      <div className="flex relative justify-center items-center w-11 h-11">
         {iconBgColor !== 'transparent' && (
           <div
             className="absolute w-[37px] h-[34px] rounded"
