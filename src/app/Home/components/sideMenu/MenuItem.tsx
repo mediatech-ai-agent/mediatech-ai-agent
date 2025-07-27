@@ -18,7 +18,8 @@ const MenuItem: React.FC<MenuItemProps> = ({
 }) => {
   const content = (
     <div
-      className="relative w-[232px] h-[44px] mb-2 cursor-pointer hover:opacity-80"
+      className={`relative h-[44px] mb-2 cursor-pointer hover:opacity-80 ${isCollapsed ? 'w-11' : 'w-[232px]'
+        }`}
       onClick={onClick}
     >
       {/* 아이콘 영역 - 절대 위치 고정 (왼쪽에서 0px) */}
