@@ -1,27 +1,49 @@
 import ChatInput from './components/ChatInput';
 import AgentCardGrid from './components/AgentCardGrid';
 import ChatMessages from './components/ChatMessages';
-import { useCurrentMessages } from '@/stores/chatStore.ts';
+import { SideMenu } from './components/sideMenu';
+import { useCurrentMessages, useChatSessions } from '@/stores/chatStore.ts';
+import { useSidebarController, MENU_ITEMS, MENU_HEADER_ITEMS, getIconByAgentMode } from '@/shared/utils/useSidebarController';
+import { ICON_PATH } from '@/shared/constants';
 
-const SIDEBAR_WIDTH = 240;
+const SIDEBAR_WIDTH = 280;
 
 const Home = () => {
   const messages = useCurrentMessages();
+  const sessions = useChatSessions();
+  const { handleMenuClick, handleHistoryClick } = useSidebarController();
 
+  // 세션에서 첫 번째 사용자 메시지를 17자까지 자른 제목 생성
+  const getSessionTitle = (session: typeof sessions[0]): string => {
+    const firstUserMessage = session.messages.find(message => message.sender === 'user');
+    if (firstUserMessage) {
+      const originalTitle = firstUserMessage.content;
+      if (originalTitle.length > 17) {
+        return `${originalTitle.slice(0, 17)}...`;
+      }
+      return originalTitle;
+    }
+    return session.title; // 사용자 메시지가 없으면 기본 제목 사용
+  };
+
+  // sessions 데이터를 historyItems 형태로 변환
+  const historyItems = sessions.map(session => ({
+    id: session.id,
+    title: getSessionTitle(session),
+    icon: getIconByAgentMode(session.agentMode),
+  }));
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <aside
-        className="fixed top-0 left-0 h-full z-20 hidden md:flex flex-col"
-        style={{
-          width: SIDEBAR_WIDTH,
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          borderRight: '1px solid rgba(255, 255, 255, 0.1)',
-        }}
-      >
-        <div className="flex-1 flex items-center justify-center text-white/40">
-          Sidebar
-        </div>
+    <div className="overflow-hidden relative min-h-screen">
+      <aside className={`fixed top-1/2 flex-col items-center -translate-y-1/2 left-[60px] left-side-menu w-[${SIDEBAR_WIDTH}px] h-[810px]`}>
+        <SideMenu
+          title="B tv GPT"
+          headerIcon={ICON_PATH.SIDE_MENU.MENU}
+          menuHeaderItems={MENU_HEADER_ITEMS}
+          menuItems={MENU_ITEMS}
+          historyItems={historyItems}
+          onMenuItemClick={handleMenuClick}
+          onHistoryItemClick={handleHistoryClick}
+        />
       </aside>
 
       <main
@@ -38,7 +60,7 @@ const Home = () => {
       </main>
 
       <ChatInput />
-    </div>
+    </div >
   );
 };
 

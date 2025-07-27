@@ -14,8 +14,8 @@ const ChatMessages = () => {
     <div className="p-8 pt-12">
       {messages.map((msg) =>
         msg.sender === 'ai' ? (
-          <div key={msg.id} className="mb-6 w-fit text-left">
-            <div className="text-xs text-white/50 mb-2">
+          <div key={msg.id} className="mb-6 text-left w-fit">
+            <div className="mb-2 text-xs text-white/50">
               {msg.timestamp.toLocaleTimeString()}
             </div>
             <MarkdownRenderer content={msg.content} className="inline-block" />
@@ -23,11 +23,11 @@ const ChatMessages = () => {
         ) : (
           <div key={msg.id} className="flex justify-end">
             <div className="max-w-2xl">
-              <div className="text-xs text-white/50 mb-2 text-right">
+              <div className="mb-2 text-xs text-right text-white/50">
                 {msg.timestamp.toLocaleTimeString()}
               </div>
               <div
-                className="p-4 rounded-2xl rounded-br-md text-white leading-relaxed"
+                className="p-4 leading-relaxed text-white rounded-2xl rounded-br-md"
                 style={{
                   background: 'rgba(255, 255, 255, 0.15)',
                   backdropFilter: 'blur(20px)',
