@@ -132,7 +132,7 @@ const Tooltip: React.FC<TooltipProps> = ({
                     className={`opacity-100 transition-all duration-200 ease-out transform scale-100 ${getPositionClasses()} ${className}`}
                 >
                     {/* 툴팁 본체 - Figma 디자인에 맞춤 */}
-                    <div className="relative rounded-full backdrop-blur-sm overflow-hidden"
+                    <div className="overflow-hidden relative rounded-full backdrop-blur-sm"
                         style={{
                             background: 'rgba(255, 255, 255, 0.03)',
                             backgroundBlendMode: 'luminosity, color-dodge',
