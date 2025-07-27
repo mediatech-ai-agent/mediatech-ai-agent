@@ -113,6 +113,8 @@ interface ChatState {
 interface ChatActions {
   // 새 채팅 세션 생성
   createSession: () => void;
+  // 임시 세션 생성 (sessions에 저장하지 않음)
+  createTemporarySession: () => void;
   // 세션 선택
   selectSession: (sessionId: string) => void;
   // 메시지 추가
@@ -181,6 +183,23 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     });
   },
 
+  createTemporarySession: () => {
+    const { currentAgentMode } = get();
+    const newSession: ChatSession = {
+      id: `temp_session_${Date.now()}`,
+      title: '새로운 대화',
+      messages: [],
+      agentMode: currentAgentMode,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    // sessions에는 저장하지 않고 currentSession만 설정
+    set({
+      currentSession: newSession,
+    });
+  },
+
   selectSession: (sessionId: string) => {
     const session = get().sessions.find((s) => s.id === sessionId);
     if (session) {
@@ -243,6 +262,31 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     type: MessageType = 'text',
     metadata?: ChatMessage['metadata']
   ) => {
+    const { currentSession, sessions } = get();
+
+    // 임시 세션인지 확인 (currentSession이 있지만 sessions에 없는 경우)
+    const isTemporarySession =
+      currentSession &&
+      !sessions.find((session) => session.id === currentSession.id);
+
+    if (isTemporarySession) {
+      // 임시 세션을 정식 세션으로 변환하여 sessions에 추가
+      const permanentSession: ChatSession = {
+        ...currentSession,
+        id: `session_${Date.now()}`, // 새로운 정식 ID 생성
+      };
+
+      set((state) => {
+        const updatedSessions = [permanentSession, ...state.sessions];
+        saveSessions(updatedSessions);
+
+        return {
+          sessions: updatedSessions,
+          currentSession: permanentSession,
+        };
+      });
+    }
+
     get().addMessage(content, 'user', type, metadata);
   },
 
@@ -263,8 +307,8 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     // 에이전트 모드 먼저 설정
     set({ currentAgentMode: agentMode });
 
-    // 새로운 세션 생성 (현재 agentMode가 세션에 저장됨)
-    get().createSession();
+    // 임시 세션 생성 (sessions에 저장하지 않음)
+    get().createTemporarySession();
 
     // AI 메시지 추가
     get().addMessage(content, 'ai', type, metadata);
