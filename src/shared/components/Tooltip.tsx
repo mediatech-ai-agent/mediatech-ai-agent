@@ -18,8 +18,8 @@ interface TooltipProps {
 const Tooltip: React.FC<TooltipProps> = ({
     content,
     children,
-    position = 'top',
-    delay = 500,
+    position = 'right',
+    delay = 300,
     show,
     className = '',
 }) => {
@@ -107,29 +107,13 @@ const Tooltip: React.FC<TooltipProps> = ({
             case 'left':
                 return `${baseClasses} right-full top-1/2 transform -translate-y-1/2 mr-2`;
             case 'right':
-                return `${baseClasses} left-full top-1/2 transform -translate-y-1/2 ml-2`;
+                return `${baseClasses} left-full top-1/2 transform -translate-y-1/2 ml-3`;
             default:
                 return `${baseClasses} bottom-full left-1/2 transform -translate-x-1/2 mb-2`;
         }
     };
 
-    // 화살표 위치 클래스
-    const getArrowClasses = () => {
-        const baseArrow = "absolute w-2 h-2 bg-white/[0.03] border border-white/20 transform rotate-45";
 
-        switch (actualPosition) {
-            case 'top':
-                return `${baseArrow} top-full left-1/2 -translate-x-1/2 -translate-y-1/2`;
-            case 'bottom':
-                return `${baseArrow} bottom-full left-1/2 -translate-x-1/2 translate-y-1/2`;
-            case 'left':
-                return `${baseArrow} left-full top-1/2 -translate-x-1/2 -translate-y-1/2`;
-            case 'right':
-                return `${baseArrow} right-full top-1/2 translate-x-1/2 -translate-y-1/2`;
-            default:
-                return `${baseArrow} top-full left-1/2 -translate-x-1/2 -translate-y-1/2`;
-        }
-    };
 
     const visible = show !== undefined ? show : isVisible;
 
@@ -147,21 +131,31 @@ const Tooltip: React.FC<TooltipProps> = ({
                     ref={tooltipRef}
                     className={`opacity-100 transition-all duration-200 ease-out transform scale-100 ${getPositionClasses()} ${className}`}
                 >
-                    {/* 툴팁 본체 */}
-                    <div className="relative px-3 py-1 min-h-[24px] flex items-center justify-center rounded-full bg-gradient-to-br from-white/[0.03] to-gray-500/15 border border-transparent bg-clip-border backdrop-blur-sm">
-                        {/* 그라데이션 테두리 효과 */}
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/45 via-white/[0.0001] to-white/15 p-[0.5px]">
-                            <div className="w-full h-full rounded-full bg-gradient-to-br from-white/[0.03] to-gray-500/15" />
+                    {/* 툴팁 본체 - Figma 디자인에 맞춤 */}
+                    <div className="relative rounded-full backdrop-blur-sm overflow-hidden"
+                        style={{
+                            background: 'rgba(255, 255, 255, 0.03)',
+                            backgroundBlendMode: 'luminosity, color-dodge',
+                            backdropFilter: 'blur(4px)',
+                        }}>
+                        {/* 그라디언트 테두리 */}
+                        <div className="absolute inset-0 rounded-full"
+                            style={{
+                                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.0001) 40.57%, rgba(255, 255, 255, 0.0001) 57.44%, rgba(255, 255, 255, 0.15) 98.66%)',
+                                padding: '0.5px',
+                                WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                                WebkitMaskComposite: 'xor',
+                                maskComposite: 'exclude',
+                            }}>
                         </div>
 
-                        {/* 텍스트 */}
-                        <span className="relative z-10 text-white text-xs font-semibold font-['Pretendard'] whitespace-nowrap leading-4">
-                            {content}
-                        </span>
+                        {/* 텍스트 컨테이너 - 정확한 가운데 정렬 */}
+                        <div className="relative px-3 py-1 flex items-center justify-center min-h-[24px]">
+                            <span className="text-white text-xs font-semibold font-['Pretendard'] whitespace-nowrap leading-4">
+                                {content}
+                            </span>
+                        </div>
                     </div>
-
-                    {/* 화살표 */}
-                    <div className={getArrowClasses()} />
                 </div>
             )}
         </div>
