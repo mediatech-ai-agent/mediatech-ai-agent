@@ -1,10 +1,13 @@
 import React from 'react';
 
-const MenuDivider: React.FC = () => {
+interface MenuDividerProps {
+  isCollapsed?: boolean;
+}
+
+const MenuDivider: React.FC<MenuDividerProps> = ({ isCollapsed = false }) => {
   return (
-    <div className="flex justify-center w-[232px] my-2">
-      <div className="w-56 h-px bg-gray-300 opacity-30" />
-    </div>
+    <div className={`h-px bg-gray-300 opacity-30 ${isCollapsed ? 'w-11' : 'w-56'
+      }`} />
   );
 };
 

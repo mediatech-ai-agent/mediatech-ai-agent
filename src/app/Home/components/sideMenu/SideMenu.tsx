@@ -9,6 +9,8 @@ import bgMenuFull from '@/assets/bg_menu_full.png';
 export interface SideMenuProps {
   title: string;
   headerIcon: string;
+  isCollapsed?: boolean;
+  onToggle?: () => void;
   menuHeaderItems: Array<{
     id: string;
     title: string;
@@ -34,6 +36,8 @@ export interface SideMenuProps {
 const SideMenu: React.FC<SideMenuProps> = ({
   title,
   headerIcon,
+  isCollapsed = false,
+  onToggle,
   menuHeaderItems,
   menuItems,
   historyItems,
@@ -42,53 +46,93 @@ const SideMenu: React.FC<SideMenuProps> = ({
 }) => {
   return (
     <div
-      className="w-[280px] h-[810px] relative bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: `url(${bgMenuFull})` }}
+      className={`h-[810px] relative transition-all duration-300 origin-left ${isCollapsed ? 'w-[92px]' : 'w-[280px]'
+        }`}
     >
-      <div className="p-6 pt-8">
-        <MenuHeader title={title} icon={headerIcon} />
+      {/* 배경 레이어 - overflow-hidden 적용 */}
+      <div
+        className="overflow-hidden absolute inset-0 transition-all duration-300 origin-left"
+        style={{
+          backgroundImage: `url(${bgMenuFull})`,
+          backgroundSize: isCollapsed ? '92px 810px' : '280px 810px',
+          backgroundPosition: 'left center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
 
-        <div className="mt-6">
+      {/* 컨텐츠 레이어 - 모든 요소 절대 위치로 고정 */}
+      <div className="relative z-10 w-full h-full">
+        {/* MenuHeader - 절대 위치 고정 */}
+        <div className="absolute right-6 left-6 top-8">
+          <MenuHeader
+            title={title}
+            icon={headerIcon}
+            isCollapsed={isCollapsed}
+            onToggle={onToggle}
+          />
+        </div>
+
+        {/* 새로운 대화하기 - 절대 위치 고정 */}
+        <div className="absolute top-[92px] left-6">
           {menuHeaderItems.map((item) => (
-            <MenuItem
-              key={item.id}
-              title={item.title}
-              icon={item.icon}
-              iconBgColor={item.iconBgColor}
-              onClick={() => onMenuItemClick?.(item.id)}
-            />
+            <div key={item.id} className="relative">
+              <MenuItem
+                title={item.title}
+                icon={item.icon}
+                iconBgColor={item.iconBgColor}
+                isCollapsed={isCollapsed}
+                onClick={() => onMenuItemClick?.(item.id)}
+              />
+            </div>
           ))}
         </div>
 
-        <MenuDivider />
+        {/* MenuDivider - 절대 위치 고정 */}
+        <div className={`absolute top-[140px] ${isCollapsed ? 'left-[24px]' : 'left-6'}`}>
+          <MenuDivider isCollapsed={isCollapsed} />
+        </div>
 
-        <div>
-          {menuItems.map((item) => (
-            <MenuItem
-              key={item.id}
-              title={item.title}
-              icon={item.icon}
-              iconBgColor={item.iconBgColor}
-              onClick={() => onMenuItemClick?.(item.id)}
-            />
+        {/* 에이전트 아이콘들 - 절대 위치 고정 */}
+        <div className="absolute top-[148px] left-6">
+          {menuItems.map((item, index) => (
+            <div key={item.id} className="absolute" style={{ top: `${index * 48}px` }}>
+              <div className="relative">
+                <MenuItem
+                  title={item.title}
+                  icon={item.icon}
+                  iconBgColor={item.iconBgColor}
+                  isCollapsed={isCollapsed}
+                  onClick={() => onMenuItemClick?.(item.id)}
+                />
+              </div>
+            </div>
           ))}
         </div>
 
-        <MenuDivider />
+        {/* 이전 대화 섹션 - 절대 위치 고정 */}
+        {!isCollapsed && (
+          <>
+            <div className="absolute top-[340px] left-6">
+              <MenuDivider isCollapsed={isCollapsed} />
+            </div>
+            <div className="absolute top-[356px] left-6">
+              <SectionHeader title="이전 대화" />
+            </div>
+            <div className="absolute bottom-6 right-6 left-6 top-[400px] overflow-y-auto overflow-x-hidden custom-scrollbar">
+              {historyItems.map((item) => (
+                <HistoryItem
+                  key={item.id}
+                  title={item.title}
+                  icon={item.icon}
+                  iconBgColor={item.iconBgColor}
+                  onClick={() => onHistoryItemClick?.(item.id)}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
-        <SectionHeader title="이전 대화" />
 
-        <div className="overflow-y-auto mt-4 max-h-80 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
-          {historyItems.map((item) => (
-            <HistoryItem
-              key={item.id}
-              title={item.title}
-              icon={item.icon}
-              iconBgColor={item.iconBgColor}
-              onClick={() => onHistoryItemClick?.(item.id)}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );

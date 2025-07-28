@@ -17,7 +17,7 @@ const saveSessions = (sessions: ChatSession[]) => {
   if (saveSessionsTimer) {
     clearTimeout(saveSessionsTimer);
   }
-  
+
   // 500ms 후에 저장 (디바운스)
   saveSessionsTimer = setTimeout(() => {
     try {
@@ -34,15 +34,15 @@ const loadSessions = (): ChatSession[] => {
     const sessions = chatStorage.get<ChatSession[]>(SESSIONS_STORAGE_KEY);
     if (sessions && Array.isArray(sessions)) {
       // Date 객체 복원 및 agentMode 기본값 설정
-      return sessions.map(session => ({
+      return sessions.map((session) => ({
         ...session,
         agentMode: session.agentMode ?? null, // 기존 세션에 agentMode가 없으면 null로 설정
         createdAt: new Date(session.createdAt),
         updatedAt: new Date(session.updatedAt),
-        messages: session.messages.map(message => ({
+        messages: session.messages.map((message) => ({
           ...message,
-          timestamp: new Date(message.timestamp)
-        }))
+          timestamp: new Date(message.timestamp),
+        })),
       }));
     }
   } catch (error) {
@@ -113,6 +113,8 @@ interface ChatState {
 interface ChatActions {
   // 새 채팅 세션 생성
   createSession: () => void;
+  // 임시 세션 생성 (sessions에 저장하지 않음)
+  createTemporarySession: () => void;
   // 세션 선택
   selectSession: (sessionId: string) => void;
   // 메시지 추가
@@ -173,7 +175,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       const updatedSessions = [newSession, ...state.sessions];
       // 로컬 스토리지에 저장 (디바운스 적용)
       saveSessions(updatedSessions);
-      
+
       return {
         sessions: updatedSessions,
         currentSession: newSession,
@@ -181,12 +183,29 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     });
   },
 
+  createTemporarySession: () => {
+    const { currentAgentMode } = get();
+    const newSession: ChatSession = {
+      id: `temp_session_${Date.now()}`,
+      title: '새로운 대화',
+      messages: [],
+      agentMode: currentAgentMode,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    // sessions에는 저장하지 않고 currentSession만 설정
+    set({
+      currentSession: newSession,
+    });
+  },
+
   selectSession: (sessionId: string) => {
     const session = get().sessions.find((s) => s.id === sessionId);
     if (session) {
-      set({ 
+      set({
         currentSession: session,
-        currentAgentMode: session.agentMode // 세션의 agentMode를 현재 상태로 설정
+        currentAgentMode: session.agentMode, // 세션의 agentMode를 현재 상태로 설정
       });
     }
   },
@@ -212,7 +231,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       metadata,
     };
 
-    const updatedSession: ChatSession = {     
+    const updatedSession: ChatSession = {
       ...currentSession,
       messages: [...currentSession.messages, newMessage],
       updatedAt: new Date(),
@@ -227,10 +246,10 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       const updatedSessions = state.sessions.map((session) =>
         session.id === currentSession.id ? updatedSession : session
       );
-      
+
       // 로컬 스토리지에 저장 (디바운스 적용)
       saveSessions(updatedSessions);
-      
+
       return {
         currentSession: updatedSession,
         sessions: updatedSessions,
@@ -243,6 +262,31 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     type: MessageType = 'text',
     metadata?: ChatMessage['metadata']
   ) => {
+    const { currentSession, sessions } = get();
+
+    // 임시 세션인지 확인 (currentSession이 있지만 sessions에 없는 경우)
+    const isTemporarySession =
+      currentSession &&
+      !sessions.find((session) => session.id === currentSession.id);
+
+    if (isTemporarySession) {
+      // 임시 세션을 정식 세션으로 변환하여 sessions에 추가
+      const permanentSession: ChatSession = {
+        ...currentSession,
+        id: `session_${Date.now()}`, // 새로운 정식 ID 생성
+      };
+
+      set((state) => {
+        const updatedSessions = [permanentSession, ...state.sessions];
+        saveSessions(updatedSessions);
+
+        return {
+          sessions: updatedSessions,
+          currentSession: permanentSession,
+        };
+      });
+    }
+
     get().addMessage(content, 'user', type, metadata);
   },
 
@@ -262,10 +306,10 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   ) => {
     // 에이전트 모드 먼저 설정
     set({ currentAgentMode: agentMode });
-    
-    // 새로운 세션 생성 (현재 agentMode가 세션에 저장됨)
-    get().createSession();
-    
+
+    // 임시 세션 생성 (sessions에 저장하지 않음)
+    get().createTemporarySession();
+
     // AI 메시지 추가
     get().addMessage(content, 'ai', type, metadata);
   },
@@ -289,19 +333,19 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
           ? { ...session, title, updatedAt: new Date() }
           : session
       );
-      
+
       // 로컬 스토리지에 저장
       saveSessions(updatedSessions);
-      
+
       return {
         sessions: updatedSessions,
         currentSession:
           state.currentSession?.id === sessionId
-            ? { 
-                ...state.currentSession, 
-                title, 
+            ? {
+                ...state.currentSession,
+                title,
                 updatedAt: new Date(),
-                agentMode: state.currentSession.agentMode // agentMode 유지
+                agentMode: state.currentSession.agentMode, // agentMode 유지
               }
             : state.currentSession,
       };
@@ -315,7 +359,7 @@ if (typeof window !== 'undefined') {
     const currentSessions = useChatStore.getState().sessions;
     saveSessionsImmediately(currentSessions);
   });
-  
+
   // 페이지 숨김 시에도 저장 (모바일 브라우저 대응)
   window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
