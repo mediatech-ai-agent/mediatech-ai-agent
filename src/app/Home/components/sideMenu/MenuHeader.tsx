@@ -30,22 +30,22 @@ const MenuHeader: React.FC<MenuHeaderProps> = ({
   }, [isCollapsed]);
 
   return (
-    <div className={`flex items-center h-11 transition-all duration-300 ${isCollapsed ? 'w-11 justify-center' : 'w-[232px] justify-between'
+    <div className={`flex items-center h-11 transition-all duration-300 ${isCollapsed ? 'justify-center w-11' : 'justify-between w-[232px]'
       }`}>
       {/* 제목 - 접힌 상태에서는 숨김, 펼친 상태에서는 지연 표시 */}
       {!isCollapsed && (
-        <h1 className={`text-white text-[17px] font-normal leading-6 font-['Pretendard'] transition-opacity duration-200 overflow-hidden whitespace-nowrap text-ellipsis ${showTitle ? 'opacity-100' : 'opacity-0'
+        <h1 className={`font-normal leading-6 text-white text-[17px] font-['Pretendard'] transition-opacity duration-200 overflow-hidden whitespace-nowrap text-ellipsis ${showTitle ? 'opacity-100' : 'opacity-0'
           }`}>
           {title}
         </h1>
       )}
 
       {/* 클릭 가능한 아이콘 영역 */}
-      <Tooltip content={isCollapsed ? "메뉴 닫기" : "메뉴 열기"} position="right">
+      <Tooltip content={isCollapsed ? "메뉴 열기" : "메뉴 닫기"} position="right">
         <button
           onClick={onToggle}
           className="flex justify-center items-center w-11 h-11 rounded-lg transition-colors duration-200 cursor-pointer hover:bg-white/10"
-          aria-label={isCollapsed ? "메뉴 닫기" : "메뉴 열기"}
+          aria-label={isCollapsed ? "메뉴 열기" : "메뉴 닫기"}
         >
           <img
             src={icon}

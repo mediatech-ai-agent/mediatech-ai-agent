@@ -51,7 +51,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
     >
       {/* 배경 레이어 - overflow-hidden 적용 */}
       <div
-        className="absolute inset-0 overflow-hidden origin-left transition-all duration-300"
+        className="overflow-hidden absolute inset-0 transition-all duration-300 origin-left"
         style={{
           backgroundImage: `url(${bgMenuFull})`,
           backgroundSize: isCollapsed ? '92px 810px' : '280px 810px',
@@ -63,7 +63,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
       {/* 컨텐츠 레이어 - 모든 요소 절대 위치로 고정 */}
       <div className="relative z-10 w-full h-full">
         {/* MenuHeader - 절대 위치 고정 */}
-        <div className="absolute top-8 left-6 right-6">
+        <div className="absolute right-6 left-6 top-8">
           <MenuHeader
             title={title}
             icon={headerIcon}
@@ -118,7 +118,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
             <div className="absolute top-[356px] left-6">
               <SectionHeader title="이전 대화" />
             </div>
-            <div className="absolute top-[400px] left-6 right-6 bottom-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
+            <div className="absolute bottom-6 right-6 left-6 top-[400px] overflow-y-auto overflow-x-hidden custom-scrollbar">
               {historyItems.map((item) => (
                 <HistoryItem
                   key={item.id}
