@@ -3,9 +3,12 @@ import { ArrowUp, Image } from 'lucide-react';
 import React, { useState } from 'react';
 
 const ChatInput = () => {
-  const { addUserMessage, addAiMessage, setAiResponding } = useChatStore();
+  const { addUserMessage, addAiMessage, setAiResponding, currentSession } = useChatStore();
   const [input, setInput] = useState('');
   const [isComposing, setIsComposing] = useState(false);
+
+  const userMessageCount = currentSession?.messages?.filter(message => message.sender === 'user').length || 0;
+  const showPlaceholder = userMessageCount === 0;
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
@@ -104,7 +107,7 @@ function example() {
         <div className="flex-1 mb-4">
           <textarea
             className="w-full bg-transparent text-white placeholder-white/70 text-lg outline-none resize-none"
-            placeholder="B tv 개발에 필요한 무엇이든 물어보세요"
+            placeholder={showPlaceholder ? "B tv 개발에 필요한 무엇이든 물어보세요" : ""}
             value={input}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
