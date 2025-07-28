@@ -33,7 +33,7 @@ const ChatHeader: React.FC = () => {
         };
       default:
         return {
-          icon: '/src/assets/sideMenu/ic_menu_nor.png',
+          icon: '/src/assets/sideMenu/ic_new_nor.png',
           title: '새로운 대화하기'
         };
     }
