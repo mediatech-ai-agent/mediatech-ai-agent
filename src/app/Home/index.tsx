@@ -2,7 +2,7 @@ import ChatInput from './components/ChatInput';
 import AgentCardGrid from './components/AgentCardGrid';
 import ChatMessages from './components/ChatMessages';
 import { SideMenu } from './components/sideMenu';
-import { useCurrentMessages, useChatSessions } from '@/stores/chatStore.ts';
+import { useCurrentMessages, useChatSessions, useChatStore } from '@/stores/chatStore.ts';
 import { useSidebarController, MENU_ITEMS, MENU_HEADER_ITEMS, getIconByAgentMode } from '@/shared/utils/useSidebarController';
 import { useSidebarToggle } from '@/shared/hooks/useSidebarToggle';
 import { ICON_PATH } from '@/shared/constants';
@@ -13,6 +13,7 @@ const SIDEBAR_WIDTH_COLLAPSED = 92;
 const Home = () => {
   const messages = useCurrentMessages();
   const sessions = useChatSessions();
+  const { togglePinSession } = useChatStore();
   const { handleMenuClick, handleHistoryClick } = useSidebarController();
   const { isCollapsed, toggle } = useSidebarToggle();
 
@@ -34,12 +35,17 @@ const Home = () => {
     id: session.id,
     title: getSessionTitle(session),
     icon: getIconByAgentMode(session.agentMode),
+    isSaved: session.isPinned || false, // 고정 상태를 isSaved로 전달
   }));
+
+  const handleHistorySaveToggle = (sessionId: string) => {
+    togglePinSession(sessionId);
+  };
   const currentSidebarWidth = isCollapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED;
 
   return (
     <div className="overflow-hidden relative min-h-screen">
-      <aside className={`fixed top-1/2 -translate-y-1/2 left-[60px] left-side-menu h-[810px] transition-all duration-300`}>
+      <aside className={`fixed top-1/2 transition-all duration-300 -translate-y-1/2 left-[60px] left-side-menu h-[810px]`}>
         <SideMenu
           title="B tv GPT"
           headerIcon={ICON_PATH.SIDE_MENU.MENU}
@@ -50,6 +56,7 @@ const Home = () => {
           historyItems={historyItems}
           onMenuItemClick={handleMenuClick}
           onHistoryItemClick={handleHistoryClick}
+          onHistorySaveToggle={handleHistorySaveToggle}
         />
       </aside>
 

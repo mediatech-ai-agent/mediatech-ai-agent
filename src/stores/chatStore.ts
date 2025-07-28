@@ -33,10 +33,12 @@ const loadSessions = (): ChatSession[] => {
   try {
     const sessions = chatStorage.get<ChatSession[]>(SESSIONS_STORAGE_KEY);
     if (sessions && Array.isArray(sessions)) {
-      // Date 객체 복원 및 agentMode 기본값 설정
+      // Date 객체 복원 및 기본값 설정
       return sessions.map((session) => ({
         ...session,
         agentMode: session.agentMode ?? null, // 기존 세션에 agentMode가 없으면 null로 설정
+        isPinned: session.isPinned ?? false, // 기존 세션에 isPinned가 없으면 false로 설정
+        originalIndex: session.originalIndex, // originalIndex는 있으면 유지, 없으면 undefined
         createdAt: new Date(session.createdAt),
         updatedAt: new Date(session.updatedAt),
         messages: session.messages.map((message) => ({
@@ -93,6 +95,8 @@ export interface ChatSession {
   agentMode: AgentMode; // 해당 세션의 에이전트 모드
   createdAt: Date;
   updatedAt: Date;
+  isPinned?: boolean; // 고정 상태
+  originalIndex?: number; // 원래 순서 (고정 해제 시 복원용)
 }
 
 // 채팅 스토어 상태 인터페이스
@@ -151,6 +155,8 @@ interface ChatActions {
   setLoading: (isLoading: boolean) => void;
   // 세션 제목 업데이트
   updateSessionTitle: (sessionId: string, title: string) => void;
+  // 세션 고정/해제 토글
+  togglePinSession: (sessionId: string) => void;
 }
 
 export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
@@ -347,6 +353,67 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
                 updatedAt: new Date(),
                 agentMode: state.currentSession.agentMode, // agentMode 유지
               }
+            : state.currentSession,
+      };
+    });
+  },
+
+  togglePinSession: (sessionId: string) => {
+    set((state) => {
+      const targetSessionIndex = state.sessions.findIndex((s) => s.id === sessionId);
+      if (targetSessionIndex === -1) return state;
+
+      const targetSession = state.sessions[targetSessionIndex];
+      const isPinning = !targetSession.isPinned;
+
+      let updatedSessions: ChatSession[];
+
+      if (isPinning) {
+        // 고정하는 경우: 해당 세션을 맨 앞으로 이동
+        const sessionToPin = {
+          ...targetSession,
+          isPinned: true,
+          originalIndex: targetSessionIndex, // 원래 위치 저장
+          updatedAt: new Date(),
+        };
+
+        // 다른 세션들과 함께 새 배열 생성 (고정된 세션을 맨 앞에)
+        updatedSessions = [
+          sessionToPin,
+          ...state.sessions.filter((session) => session.id !== sessionId),
+        ];
+      } else {
+        // 고정 해제하는 경우: 원래 위치로 복원
+        const sessionToUnpin = {
+          ...targetSession,
+          isPinned: false,
+          originalIndex: undefined,
+          updatedAt: new Date(),
+        };
+
+        // 다른 세션들 먼저 배치
+        const otherSessions = state.sessions.filter((session) => session.id !== sessionId);
+        
+        // 원래 인덱스가 있으면 그 위치에 삽입, 없으면 끝에 추가
+        const insertIndex = targetSession.originalIndex !== undefined 
+          ? Math.min(targetSession.originalIndex, otherSessions.length)
+          : otherSessions.length;
+
+        updatedSessions = [
+          ...otherSessions.slice(0, insertIndex),
+          sessionToUnpin,
+          ...otherSessions.slice(insertIndex),
+        ];
+      }
+
+      // 로컬 스토리지에 저장
+      saveSessions(updatedSessions);
+
+      return {
+        sessions: updatedSessions,
+        currentSession:
+          state.currentSession?.id === sessionId
+            ? { ...state.currentSession, isPinned: isPinning }
             : state.currentSession,
       };
     });
