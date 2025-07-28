@@ -9,7 +9,7 @@ import ChatMessages from './components/ChatMessages';
 import { SideMenu } from './components/sideMenu';
 
 const SIDEBAR_WIDTH_EXPANDED = 280;
-const SIDEBAR_WIDTH_COLLAPSED = 92;
+// const SIDEBAR_WIDTH_COLLAPSED = 92;
 
 const Home = () => {
   const messages = useCurrentMessages();
@@ -36,7 +36,6 @@ const Home = () => {
     title: getSessionTitle(session),
     icon: getIconByAgentMode(session.agentMode),
   }));
-  const currentSidebarWidth = isCollapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED;
 
   return (
     <div className="overflow-hidden relative" style={{ height: '810px' }}>
@@ -57,7 +56,7 @@ const Home = () => {
       <main
         className={`fixed top-1/2 -translate-y-1/2 custom-scrollbar transition-all duration-300 flex flex-col ${messages.length === 0 ? 'items-center justify-center' : ''}`}
         style={{
-          marginLeft: currentSidebarWidth + 177, // 사이드바 + 177px 마진
+          marginLeft: SIDEBAR_WIDTH_EXPANDED + 177, // 사이드바 확장 상태 기준으로 고정 (280 + 177)
           marginRight: 212,
           minWidth: '1236px',
           height: '810px', // 전체 높이를 사이드바와 동일한 810px로 설정
