@@ -28,6 +28,7 @@ const Tooltip: React.FC<TooltipProps> = ({
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const tooltipRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLDivElement>(null);
+    const isManual = show !== undefined;
 
     // 툴팁 위치 계산
     const calculatePosition = () => {
@@ -55,7 +56,7 @@ const Tooltip: React.FC<TooltipProps> = ({
     };
 
     const handleMouseEnter = () => {
-        if (show !== undefined) return;
+        if (isManual) return;
 
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
@@ -69,7 +70,7 @@ const Tooltip: React.FC<TooltipProps> = ({
     };
 
     const handleMouseLeave = () => {
-        if (show !== undefined) return;
+        if (isManual) return;
 
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
@@ -79,7 +80,7 @@ const Tooltip: React.FC<TooltipProps> = ({
     };
 
     useEffect(() => {
-        if (show !== undefined) {
+        if (isManual) {
             setIsVisible(show);
             if (show) {
                 requestAnimationFrame(calculatePosition);
@@ -115,7 +116,7 @@ const Tooltip: React.FC<TooltipProps> = ({
 
 
 
-    const visible = show !== undefined ? show : isVisible;
+    const visible = isManual ? show : isVisible;
 
     return (
         <div
