@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Camera, Send } from 'lucide-react';
 import { useChatStore } from '@/stores/chatStore.ts';
+import { ArrowUp, Image } from 'lucide-react';
+import React, { useState } from 'react';
 
 const ChatInput = () => {
   const { addUserMessage, addAiMessage, setAiResponding } = useChatStore();
@@ -87,17 +87,15 @@ function example() {
 
   return (
     <div
-      className="fixed z-50 p-6 overflow-hidden"
+      className="absolute bottom-0 left-0 right-0 p-6 overflow-hidden w-full"
       style={{
-        height: '236px',
-        bottom: '52px',
-        left: '417px', // 사이드바(240px) + 마진(177px)
-        right: '212px',
-        minWidth: '800px',
+        minHeight: '236px',
+        maxHeight: '810px',
         background: 'rgba(255, 255, 255, 0.3)',
         backdropFilter: 'blur(6px)',
         WebkitBackdropFilter: 'blur(6px)',
         borderRadius: '20px',
+        zIndex: 10,
       }}
     >
       {/* Input area */}
@@ -105,7 +103,7 @@ function example() {
         {/* Text input */}
         <div className="flex-1 mb-4">
           <textarea
-            className="w-full h-full bg-transparent text-white placeholder-white/70 text-lg outline-none resize-none"
+            className="w-full bg-transparent text-white placeholder-white/70 text-lg outline-none resize-none"
             placeholder="B tv 개발에 필요한 무엇이든 물어보세요"
             value={input}
             onChange={handleChange}
@@ -114,6 +112,15 @@ function example() {
             onCompositionEnd={handleCompositionEnd}
             style={{
               textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+              minHeight: '120px',
+              maxHeight: '676px',
+              height: 'auto',
+              overflow: 'hidden',
+            }}
+            onInput={(e) => {
+              const target = e.target as HTMLTextAreaElement;
+              target.style.height = 'auto';
+              target.style.height = target.scrollHeight + 'px';
             }}
           />
         </div>
@@ -124,20 +131,20 @@ function example() {
           <button
             type="button"
             onClick={handleImageClick}
-            className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 group relative overflow-hidden"
+            className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 relative overflow-hidden"
             style={{
               background: 'rgba(255, 255, 255, 0.1)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.4)';
+              e.currentTarget.style.transform = 'scale(1.05)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
-            <Camera
+            <Image
               size={24}
-              className="text-white group-hover:scale-110 transition-transform duration-200"
+              className="text-white transition-colors duration-200"
             />
           </button>
 
@@ -156,6 +163,12 @@ function example() {
                     cursor: 'not-allowed',
                   }
             }
+            onClick={() => {
+              if (input.trim() !== '') {
+                handleSend(input);
+                setInput('');
+              }
+            }}
             onMouseEnter={(e) => {
               if (input.trim()) {
                 e.currentTarget.style.transform = 'scale(1.05)';
@@ -167,7 +180,7 @@ function example() {
               }
             }}
           >
-            <Send
+            <ArrowUp
               size={24}
               className={`${
                 input.trim() ? 'text-white' : 'text-white/40'
