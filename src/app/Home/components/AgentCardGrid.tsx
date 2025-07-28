@@ -1,3 +1,5 @@
+import { getAgentMessage, isValidAgentType, type AgentType } from '@/shared/utils/common';
+import { useChatStore } from '@/stores/chatStore.ts';
 import AgentCard from './AgentCard';
 
 const AgentCardGrid = () => {
@@ -11,6 +13,7 @@ const AgentCardGrid = () => {
       }
     }
   };
+
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
       <AgentCard
