@@ -1,6 +1,6 @@
-import { useRef, useEffect } from 'react';
-import MarkdownRenderer from '../../../shared/components/MarkdownRenderer';
 import { useCurrentMessages } from '@/stores/chatStore.ts';
+import { useEffect, useRef } from 'react';
+import MarkdownRenderer from '../../../shared/components/MarkdownRenderer';
 
 const ChatMessages = () => {
   const messages = useCurrentMessages();
@@ -15,17 +15,11 @@ const ChatMessages = () => {
       {messages.map((msg) =>
         msg.sender === 'ai' ? (
           <div key={msg.id} className="mb-6 text-left w-fit">
-            <div className="mb-2 text-xs text-white/50">
-              {msg.timestamp.toLocaleTimeString()}
-            </div>
             <MarkdownRenderer content={msg.content} className="inline-block" />
           </div>
         ) : (
           <div key={msg.id} className="flex justify-end">
             <div className="max-w-2xl">
-              <div className="mb-2 text-xs text-right text-white/50">
-                {msg.timestamp.toLocaleTimeString()}
-              </div>
               <div
                 className="p-4 leading-relaxed text-white rounded-2xl rounded-br-md"
                 style={{
