@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Tooltip } from '@/shared/components';
 
 interface MenuItemProps {
@@ -9,21 +9,21 @@ interface MenuItemProps {
   onClick?: () => void;
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({
+const MenuItem: React.FC<MenuItemProps> = React.memo(({
   title,
   icon,
   iconBgColor = 'transparent',
   isCollapsed = false,
   onClick,
 }) => {
-  const content = (
+  const content = useMemo(() => (
     <div
       className={`relative h-[44px] mb-2 cursor-pointer hover:opacity-80 ${isCollapsed ? 'w-11' : 'w-[232px]'
         }`}
       onClick={onClick}
     >
       {/* 아이콘 영역 - 절대 위치 고정 (왼쪽에서 0px) */}
-      <div className="absolute left-0 top-0 flex justify-center items-center w-11 h-11">
+      <div className="flex absolute top-0 left-0 justify-center items-center w-11 h-11">
         {iconBgColor !== 'transparent' && (
           <div
             className="absolute w-[37px] h-[34px] rounded"
@@ -44,7 +44,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
         </span>
       </div>
     </div>
-  );
+  ), [title, icon, iconBgColor, isCollapsed, onClick]);
 
   // 접힌 상태에서는 Tooltip으로 감싸기
   if (isCollapsed) {
@@ -56,6 +56,6 @@ const MenuItem: React.FC<MenuItemProps> = ({
   }
 
   return content;
-};
+});
 
 export default MenuItem;
