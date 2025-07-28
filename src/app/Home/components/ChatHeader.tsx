@@ -1,12 +1,11 @@
+import { useChatStore } from '@/stores/chatStore.ts';
 import React from 'react';
 
-interface ChatHeaderProps {
-  selectedFeature: string;
-}
-
-const ChatHeader: React.FC<ChatHeaderProps> = ({ selectedFeature }) => {
-  const getFeatureInfo = (feature: string) => {
-    switch (feature) {
+const ChatHeader: React.FC = () => {
+  const { currentSession } = useChatStore();
+  
+  const getFeatureInfo = (agentMode: string | null) => {
+    switch (agentMode) {
       case 'person':
         return {
           icon: '/src/assets/sideMenu/ic_person_nor.png',
@@ -40,7 +39,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ selectedFeature }) => {
     }
   };
 
-  const featureInfo = getFeatureInfo(selectedFeature);
+  const featureInfo = getFeatureInfo(currentSession?.agentMode || null);
 
   return (
     <div
@@ -54,8 +53,9 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ selectedFeature }) => {
           src={featureInfo.icon}
           alt={featureInfo.title}
           className="w-6 h-6"
+          style={{ width: '44px', height: '44px' }}
         />
-        <span className="text-white text-lg font-medium">
+        <span className="text-white font-pretendard font-medium text-[17px] leading-6 tracking-[0%] align-bottom">
           {featureInfo.title}
         </span>
       </div>
