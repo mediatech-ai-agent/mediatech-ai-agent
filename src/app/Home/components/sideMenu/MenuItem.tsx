@@ -18,7 +18,7 @@ const MenuItem: React.FC<MenuItemProps> = React.memo(({
 }) => {
   const content = useMemo(() => (
     <div
-      className={`relative h-[44px] mb-2 cursor-pointer hover:opacity-80 ${isCollapsed ? 'w-11' : 'w-[232px]'
+      className={`relative h-[44px] mb-2 cursor-pointer menu-item-hover ${isCollapsed ? 'w-11' : 'w-[232px]'
         }`}
       onClick={onClick}
     >
