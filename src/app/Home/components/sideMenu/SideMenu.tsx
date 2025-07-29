@@ -86,7 +86,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
         </div>
 
         {/* 에이전트 아이콘들 - 절대 위치 고정 */}
-        <div className="absolute top-[194px] left-6">
+        <div className="absolute top-[185px] left-6">
           {menuItems.map((item, index) => (
             <div key={item.id} className="absolute" style={{ top: `${index * 52}px` }}>
               <div className="relative">
