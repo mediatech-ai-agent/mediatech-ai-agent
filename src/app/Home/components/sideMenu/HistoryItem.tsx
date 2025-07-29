@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { ICON_PATH } from '@/shared/constants';
 
 interface HistoryItemProps {
@@ -9,21 +9,21 @@ interface HistoryItemProps {
   onSaveToggle?: () => void;
 }
 
-const HistoryItem: React.FC<HistoryItemProps> = ({
+const HistoryItem: React.FC<HistoryItemProps> = React.memo(({
   title,
   icon,
   isSaved = false,
   onClick,
   onSaveToggle,
 }) => {
-  const handleSaveClick = (e: React.MouseEvent) => {
+  const handleSaveClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation(); // 부모의 onClick 이벤트 방지
     onSaveToggle?.();
-  };
+  }, [onSaveToggle]);
 
   return (
     <div
-      className="flex items-center w-[232px] h-8 px-1.5 cursor-pointer menu-item-hover mb-2 last:mb-0"
+      className="group flex items-center w-[232px] h-8 px-1.5 cursor-pointer menu-item-hover mb-2 last:mb-0"
       onClick={onClick}
     >
       <div className="flex justify-center items-center w-8 h-8">
@@ -34,7 +34,9 @@ const HistoryItem: React.FC<HistoryItemProps> = ({
       </span>
       <div
         className={`flex justify-center items-center w-4 h-4 cursor-pointer transition-opacity duration-200 ${
-          isSaved ? 'opacity-100' : 'opacity-50 hover:opacity-100'
+          isSaved 
+            ? 'opacity-100' 
+            : 'opacity-0 group-hover:opacity-100'
         }`}
         onClick={handleSaveClick}
       >
@@ -46,6 +48,8 @@ const HistoryItem: React.FC<HistoryItemProps> = ({
       </div>
     </div>
   );
-};
+});
+
+HistoryItem.displayName = 'HistoryItem';
 
 export default HistoryItem;

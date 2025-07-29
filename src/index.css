@@ -272,7 +272,9 @@ video {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  transition: all 0.3s ease-in-out;
+  transition:
+    width 0.3s ease-in-out,
+    height 0.3s ease-in-out;
   transform-origin: left;
   border-radius: 24px;
 

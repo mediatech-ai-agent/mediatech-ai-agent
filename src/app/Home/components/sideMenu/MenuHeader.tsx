@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Tooltip } from '@/shared/components';
 
 interface MenuHeaderProps {
@@ -8,13 +8,13 @@ interface MenuHeaderProps {
   onToggle?: () => void;
 }
 
-const MenuHeader: React.FC<MenuHeaderProps> = ({
+const MenuHeader: React.FC<MenuHeaderProps> = React.memo(({
   title,
   icon,
   isCollapsed = false,
   onToggle
 }) => {
-  const [showTitle, setShowTitle] = useState(false);
+  const [showTitle, setShowTitle] = useState(!isCollapsed);
 
   useEffect(() => {
     if (!isCollapsed) {
@@ -28,6 +28,10 @@ const MenuHeader: React.FC<MenuHeaderProps> = ({
       setShowTitle(false);
     }
   }, [isCollapsed]);
+
+  const handleToggle = useCallback(() => {
+    onToggle?.();
+  }, [onToggle]);
 
   return (
     <div className={`flex items-center h-11 transition-all duration-300 ${isCollapsed ? 'justify-center w-11' : 'justify-between w-[232px]'
@@ -43,7 +47,7 @@ const MenuHeader: React.FC<MenuHeaderProps> = ({
       {/* 클릭 가능한 아이콘 영역 */}
       <Tooltip content={isCollapsed ? "메뉴 열기" : "메뉴 닫기"} position="right">
         <button
-          onClick={onToggle}
+          onClick={handleToggle}
           className="flex justify-center items-center w-11 h-11 rounded-lg transition-colors duration-200 cursor-pointer hover:bg-white/10"
           aria-label={isCollapsed ? "메뉴 열기" : "메뉴 닫기"}
         >
@@ -56,6 +60,8 @@ const MenuHeader: React.FC<MenuHeaderProps> = ({
       </Tooltip>
     </div>
   );
-};
+});
+
+MenuHeader.displayName = 'MenuHeader';
 
 export default MenuHeader;

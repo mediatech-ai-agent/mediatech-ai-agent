@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import MenuHeader from './MenuHeader';
 import MenuItem from './MenuItem';
 import MenuDivider from './MenuDivider';
@@ -33,7 +33,7 @@ export interface SideMenuProps {
   onHistorySaveToggle?: (id: string) => void;
 }
 
-const SideMenu: React.FC<SideMenuProps> = ({
+const SideMenu: React.FC<SideMenuProps> = React.memo(({
   title,
   headerIcon,
   isCollapsed = false,
@@ -45,6 +45,18 @@ const SideMenu: React.FC<SideMenuProps> = ({
   onHistoryItemClick,
   onHistorySaveToggle,
 }) => {
+
+  const handleMenuItemClick = useCallback((id: string) => {
+    onMenuItemClick?.(id);
+  }, [onMenuItemClick]);
+
+  const handleHistoryItemClick = useCallback((id: string) => {
+    onHistoryItemClick?.(id);
+  }, [onHistoryItemClick]);
+
+  const handleHistorySaveToggle = useCallback((id: string) => {
+    onHistorySaveToggle?.(id);
+  }, [onHistorySaveToggle]);
 
   return (
     <div
@@ -74,7 +86,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
                 icon={item.icon}
                 iconBgColor={item.iconBgColor}
                 isCollapsed={isCollapsed}
-                onClick={() => onMenuItemClick?.(item.id)}
+                onClick={() => handleMenuItemClick(item.id)}
               />
             </div>
           ))}
@@ -86,7 +98,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
         </div>
 
         {/* 에이전트 아이콘들 - 절대 위치 고정 */}
-        <div className="absolute top-[185px] left-6">
+        <div className="absolute top-[194px] left-6">
           {menuItems.map((item, index) => (
             <div key={item.id} className="absolute" style={{ top: `${index * 52}px` }}>
               <div className="relative">
@@ -95,7 +107,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
                   icon={item.icon}
                   iconBgColor={item.iconBgColor}
                   isCollapsed={isCollapsed}
-                  onClick={() => onMenuItemClick?.(item.id)}
+                  onClick={() => handleMenuItemClick(item.id)}
                 />
               </div>
             </div>
@@ -119,8 +131,8 @@ const SideMenu: React.FC<SideMenuProps> = ({
                     title={item.title}
                     icon={item.icon}
                     isSaved={item.isSaved}
-                    onClick={() => onHistoryItemClick?.(item.id)}
-                    onSaveToggle={() => onHistorySaveToggle?.(item.id)}
+                    onClick={() => handleHistoryItemClick(item.id)}
+                    onSaveToggle={() => handleHistorySaveToggle(item.id)}
                   />
                 ))}
               </div>
@@ -132,6 +144,8 @@ const SideMenu: React.FC<SideMenuProps> = ({
       </div>
     </div>
   );
-};
+});
+
+SideMenu.displayName = 'SideMenu';
 
 export default SideMenu;
