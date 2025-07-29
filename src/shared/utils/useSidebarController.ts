@@ -37,15 +37,15 @@ export const MENU_ITEMS = [
 export const getIconByAgentMode = (agentMode: AgentMode): string => {
   switch (agentMode) {
     case 'jira':
-      return ICON_PATH.SIDE_MENU.JIRA;
+      return ICON_PATH.HISTORY_MENU.JIRA;
     case 'cr':
-      return ICON_PATH.SIDE_MENU.CR;
+      return ICON_PATH.HISTORY_MENU.CR;
     case 'policy':
-      return ICON_PATH.SIDE_MENU.POLICY;
+      return ICON_PATH.HISTORY_MENU.POLICY;
     case 'person':
-      return ICON_PATH.SIDE_MENU.PERSON;
+      return ICON_PATH.HISTORY_MENU.PERSON;
     default:
-      return ICON_PATH.SIDE_MENU.NEW_CHAT;
+      return ICON_PATH.HISTORY_MENU.NEW_CHAT;
   }
 };
 

@@ -18,7 +18,7 @@ const MenuItem: React.FC<MenuItemProps> = React.memo(({
 }) => {
   const content = useMemo(() => (
     <div
-      className={`relative h-[44px] mb-2 cursor-pointer hover:opacity-80 ${isCollapsed ? 'w-11' : 'w-[232px]'
+      className={`relative h-[44px] mb-2 cursor-pointer menu-item-hover ${isCollapsed ? 'w-11' : 'w-[232px]'
         }`}
       onClick={onClick}
     >
@@ -33,16 +33,17 @@ const MenuItem: React.FC<MenuItemProps> = React.memo(({
         <img src={icon} alt={title} className="relative z-10" />
       </div>
 
-      {/* 텍스트 영역 - 아이콘 오른쪽에 고정, width/opacity만 변경 */}
-      <div
-        className={`absolute left-11 top-0 h-11 w-[180px] flex items-center ml-3 transition-opacity duration-300 ${isCollapsed ? 'opacity-0' : 'opacity-100'
-          }`}
-        style={{ overflow: 'hidden' }}
-      >
-        <span className="text-white text-[17px] font-normal leading-6 font-['Pretendard'] whitespace-nowrap text-left">
-          {title}
-        </span>
-      </div>
+      {/* 텍스트 영역 - 조건부 렌더링으로 변경 */}
+      {!isCollapsed && (
+        <div
+          className="absolute left-11 top-0 h-11 w-[180px] flex items-center ml-3 transition-opacity duration-300 opacity-100"
+          style={{ overflow: 'hidden' }}
+        >
+          <span className="text-white text-[17px] font-normal leading-6 font-['Pretendard'] whitespace-nowrap text-left">
+            {title}
+          </span>
+        </div>
+      )}
     </div>
   ), [title, icon, iconBgColor, isCollapsed, onClick]);
 
