@@ -1,40 +1,42 @@
-import { useChatStore } from '@/stores/chatStore.ts';
 import React from 'react';
+import { useChatStore } from '@/stores/chatStore.ts';
+import { ICON_PATH } from '@/shared/constants';
+import type { AgentType } from '@/shared/utils/common.ts';
 
 const ChatHeader: React.FC = () => {
   const { currentSession } = useChatStore();
-  
-  const getFeatureInfo = (agentMode: string | null) => {
+
+  const getFeatureInfo = (agentMode: AgentType | null) => {
     switch (agentMode) {
       case 'person':
         return {
-          icon: '/src/assets/sideMenu/ic_person_nor.png',
-          title: '담당자 찾기'
+          icon: ICON_PATH.SIDE_MENU.PERSON,
+          title: '담당자 찾기',
         };
-      case 'rule':
+      case 'policy':
         return {
-          icon: '/src/assets/sideMenu/ic_rule_nor.png',
-          title: '정책 문의하기'
+          icon: ICON_PATH.SIDE_MENU.POLICY,
+          title: '정책 문의하기',
         };
       case 'jira':
         return {
-          icon: '/src/assets/sideMenu/icon_jira.png',
-          title: 'Jira 요약하기'
+          icon: ICON_PATH.SIDE_MENU.JIRA,
+          title: 'Jira 요약하기',
         };
       case 'cr':
         return {
-          icon: '/src/assets/sideMenu/ic_cr_nor.png',
-          title: 'CR 생성하기'
+          icon: ICON_PATH.SIDE_MENU.CR,
+          title: 'CR 생성하기',
         };
       case 'new':
         return {
-          icon: '/src/assets/sideMenu/ic_new_nor.png',
-          title: '새로운 대화하기'
+          icon: ICON_PATH.SIDE_MENU.NEW_CHAT,
+          title: '새로운 대화하기',
         };
       default:
         return {
-          icon: '/src/assets/sideMenu/ic_new_nor.png',
-          title: '새로운 대화하기'
+          icon: ICON_PATH.SIDE_MENU.NEW_CHAT,
+          title: '새로운 대화하기',
         };
     }
   };
@@ -63,4 +65,4 @@ const ChatHeader: React.FC = () => {
   );
 };
 
-export default ChatHeader; 
+export default ChatHeader;
