@@ -69,12 +69,22 @@
   mix-blend-mode: soft-light;
 }
 
+/* 배경 스크롤 방지 - 최소한 설정 */
+html,
+body {
+  overflow: hidden;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   background-image: url('./assets/bg_main.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  overscroll-behavior: none;
 }
 
 button {
