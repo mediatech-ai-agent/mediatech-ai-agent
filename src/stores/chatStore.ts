@@ -275,7 +275,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       const permanentSession: ChatSession = {
         ...currentSession,
         id: `session_${Date.now()}`, // 새로운 정식 ID 생성
-      };
+      } as ChatSession;
 
       set((state) => {
         const updatedSessions = [permanentSession, ...state.sessions];
