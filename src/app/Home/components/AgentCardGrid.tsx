@@ -1,6 +1,6 @@
-import AgentCard from './AgentCard';
-import { useChatStore } from '@/stores/chatStore.ts';
 import { getAgentMessage, isValidAgentType, type AgentType } from '@/shared/utils/common';
+import { useChatStore } from '@/stores/chatStore.ts';
+import AgentCard from './AgentCard';
 
 const AgentCardGrid = () => {
   const { addAiMessageWithAgent } = useChatStore();
@@ -13,8 +13,9 @@ const AgentCardGrid = () => {
       }
     }
   };
+
   return (
-    <div className="grid grid-cols-1 gap-6 p-8 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
       <AgentCard
         title="Jira 요약하기"
         description="CR, BR 링크를 첨부해서\n댓글 요약, 히스토리 요청해 보세요"

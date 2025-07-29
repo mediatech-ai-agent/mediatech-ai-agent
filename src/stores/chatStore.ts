@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createStorageManager } from '@/shared/utils/localStorage';
+import type { AgentType } from '@/shared/utils/common.ts';
 
 // 빈 배열 상수 (참조 안정성을 위해)
 const EMPTY_MESSAGES: ChatMessage[] = [];
@@ -69,7 +70,7 @@ export type MessageType = 'text' | 'image' | 'file' | 'code' | 'markdown';
 export type MessageSender = 'user' | 'ai';
 
 // 에이전트 모드 타입 정의
-export type AgentMode = 'jira' | 'cr' | 'policy' | 'person' | null;
+export type AgentMode = AgentType | null;
 
 // 개별 메시지 인터페이스
 export interface ChatMessage {
@@ -280,7 +281,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       const permanentSession: ChatSession = {
         ...currentSession,
         id: `session_${Date.now()}`, // 새로운 정식 ID 생성
-      };
+      } as ChatSession;
 
       set((state) => {
         const updatedSessions = [permanentSession, ...state.sessions];

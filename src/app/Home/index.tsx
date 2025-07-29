@@ -1,15 +1,15 @@
 import { useMemo, useCallback } from 'react';
-import ChatInput from './components/ChatInput';
+import { ICON_PATH } from '@/shared/constants';
+import { useSidebarToggle } from '@/shared/hooks/useSidebarToggle';
+import { MENU_HEADER_ITEMS, MENU_ITEMS, getIconByAgentMode, useSidebarController } from '@/shared/utils/useSidebarController';
+import { useChatSessions, useCurrentMessages, useChatStore } from '@/stores/chatStore.ts';
 import AgentCardGrid from './components/AgentCardGrid';
+import ChatHeader from './components/ChatHeader';
+import ChatInput from './components/ChatInput';
 import ChatMessages from './components/ChatMessages';
 import { SideMenu } from './components/sideMenu';
-import { useCurrentMessages, useChatSessions, useChatStore } from '@/stores/chatStore.ts';
-import { useSidebarController, MENU_ITEMS, MENU_HEADER_ITEMS, getIconByAgentMode } from '@/shared/utils/useSidebarController';
-import { useSidebarToggle } from '@/shared/hooks/useSidebarToggle';
-import { ICON_PATH } from '@/shared/constants';
 
 const SIDEBAR_WIDTH_EXPANDED = 280;
-const SIDEBAR_WIDTH_COLLAPSED = 92;
 
 const Home = () => {
   const messages = useCurrentMessages();
@@ -32,7 +32,7 @@ const Home = () => {
   }, []);
 
   // sessions 데이터를 historyItems 형태로 변환 - memoization으로 최적화
-  const historyItems = useMemo(() => 
+  const historyItems = useMemo(() =>
     sessions.map(session => ({
       id: session.id,
       title: getSessionTitle(session),
@@ -44,18 +44,6 @@ const Home = () => {
   const handleHistorySaveToggle = useCallback((sessionId: string) => {
     togglePinSession(sessionId);
   }, [togglePinSession]);
-
-  const currentSidebarWidth = useMemo(() => 
-    isCollapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED, 
-    [isCollapsed]
-  );
-
-  const mainStyle = useMemo(() => ({
-    marginLeft: currentSidebarWidth + 177, // 사이드바 + 177px 마진
-    marginRight: 212,
-    minWidth: '1120px',
-    height: 'calc(100vh - 308px)', // 전체 높이에서 ChatInput 높이(236px + 여백 72px) 제외
-  }), [currentSidebarWidth]);
 
   return (
     <div className="overflow-hidden relative min-h-screen">
@@ -75,14 +63,31 @@ const Home = () => {
       </aside>
 
       <main
-        className={`custom-scrollbar transition-all duration-300 ${messages.length === 0 ? 'flex items-center justify-center' : 'overflow-y-auto'}`}
-        style={mainStyle}
+        className={`fixed top-1/2 -translate-y-1/2 custom-scrollbar transition-all duration-300 flex flex-col ${messages.length === 0 ? 'items-center justify-center' : ''}`}
+        style={{
+          marginLeft: SIDEBAR_WIDTH_EXPANDED + 177, // 사이드바 확장 상태 기준으로 고정 (280 + 177)
+          marginRight: 212,
+          minWidth: '1236px',
+          height: '810px', // 전체 높이를 사이드바와 동일한 810px로 설정
+        }}
       >
-        {messages.length === 0 && <AgentCardGrid />}
-        {messages.length > 0 && <ChatMessages />}
+        {messages.length === 0 && (
+          <div style={{ marginTop: '44px', height: '530px' }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '0 24px' }}>
+              <AgentCardGrid />
+            </div>
+          </div>
+        )}
+        {messages.length > 0 && (
+          <>
+            <ChatHeader />
+            <div style={{ marginTop: '44px', height: '530px', overflowY: 'auto' }}>
+              <ChatMessages />
+            </div>
+          </>
+        )}
+        <ChatInput />
       </main>
-
-      <ChatInput />
     </div >
   );
 };
