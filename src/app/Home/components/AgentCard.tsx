@@ -43,10 +43,9 @@ const AgentCard: React.FC<AgentCardProps> = ({
 
   return (
     <div
-      className="relative rounded-3xl cursor-pointer transition-all duration-300 hover:scale-105 overflow-hidden"
+      className="relative rounded-3xl cursor-pointer transition-all duration-300 hover:scale-105 overflow-hidden agent-card"
       style={{
-        width: '280px',
-        height: '280px',
+        aspectRatio: '1', // 정사각형 비율 강제 (높이는 자동 계산)
         ...(imageError ? cardStyle : {}),
       }}
       onClick={onClick}

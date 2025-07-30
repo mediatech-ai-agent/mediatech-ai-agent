@@ -1,6 +1,9 @@
 import { useChatStore } from '@/stores/chatStore.ts';
 import { useRequestAgent } from '@/shared/hooks/useRequestAgent';
-import { getBrowserSessionId } from '@/shared/utils/sessionId';
+import {
+  getCurrentSessionId,
+  getBrowserSessionId,
+} from '@/shared/utils/sessionId';
 import { ArrowUp, Link } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 
@@ -20,12 +23,10 @@ const ChatInput = () => {
   const [jiraCardWidth, setJiraCardWidth] = useState(140);
   const jiraCardRef = useRef<HTMLDivElement>(null);
 
-  const userMessageCount =
-    currentSession?.messages?.filter((message) => message.sender === 'user')
-      .length || 0;
-  const showPlaceholder = userMessageCount === 0;
   const isJiraMode = currentSession?.agentMode === 'jira';
+  const isCrMode = currentSession?.agentMode === 'cr';
   const hasJiraNumber = currentSession?.jiraNumber;
+  const isIssueKeyMode = isJiraMode || isCrMode;
 
   // Jira 카드 너비 측정
   useEffect(() => {
@@ -51,8 +52,8 @@ const ChatInput = () => {
     let fullMessage = message;
     let issueKey: string | undefined;
 
-    if (isJiraMode && jiraTicketId.trim()) {
-      fullMessage = `[${jiraTicketId.trim()}] ${message}`;
+    if (isIssueKeyMode && jiraTicketId.trim()) {
+      fullMessage = `${message}`;
       issueKey = jiraTicketId.trim();
       setJiraNumber(jiraTicketId.trim());
     }
@@ -62,12 +63,15 @@ const ChatInput = () => {
     setAiResponding(true);
 
     try {
+      // 브라우저 세션 ID 조회 (없으면 새로 생성)
+      const browserSessionId = getCurrentSessionId() || getBrowserSessionId();
+
       // 실제 API 호출
       const response = await requestAgent.mutateAsync({
         question: message,
         agent_type: currentSession?.agentMode || 'jira',
-        issue_key: issueKey,
-        session_id: getBrowserSessionId(),
+        issue_key: currentSession?.jiraNumber ?? issueKey,
+        session_id: browserSessionId,
       });
 
       // API 응답을 AI 메시지로 추가
@@ -101,8 +105,8 @@ const ChatInput = () => {
       if (input.trim() !== '') {
         handleSend(input);
         setInput('');
-        if (isJiraMode) {
-          setJiraTicketId(''); // jira 모드에서 메시지 전송 후 티켓 ID 초기화
+        if (isIssueKeyMode) {
+          setJiraTicketId('');
         }
       }
     }
@@ -110,17 +114,20 @@ const ChatInput = () => {
 
   return (
     <div
-      className="absolute bottom-0 left-0 right-0 overflow-hidden"
+      className="fixed bottom-0 overflow-hidden chat-input-container"
       style={{
-        width: '1192px',
-        minHeight: '236px',
-        maxHeight: '810px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 'clamp(1192px, 80vw, 1400px)', // 반응형
+        maxWidth: '1192px', // 최대 너비 제한
+        minHeight: '236px', // 고정 최소 높이
+        maxHeight: '600px', // 최대 높이 제한
         background: 'rgba(255, 255, 255, 0.3)',
         backdropFilter: 'blur(6px)',
         WebkitBackdropFilter: 'blur(6px)',
-        borderRadius: '20px',
+        borderRadius: '24px', // 고정 보더 라디우스
         zIndex: 10,
-        padding: '24px 32px',
+        padding: '32px 40px', // 고정 패딩
         boxSizing: 'border-box',
       }}
     >
@@ -190,9 +197,7 @@ const ChatInput = () => {
 
             <textarea
               className="w-full bg-transparent text-white placeholder-white/70 text-lg outline-none resize-none"
-              placeholder={
-                showPlaceholder ? 'B tv 개발에 필요한 무엇이든 물어보세요' : ''
-              }
+              placeholder={'B tv 개발에 필요한 무엇이든 물어보세요'}
               value={input}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
@@ -200,7 +205,7 @@ const ChatInput = () => {
               onCompositionEnd={handleCompositionEnd}
               style={{
                 textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-                minHeight: isJiraMode ? '44px' : '120px',
+                minHeight: isIssueKeyMode ? '44px' : '124px',
                 maxHeight: '676px',
                 textIndent: hasJiraNumber ? `${jiraCardWidth + 20}px` : '0px',
                 lineHeight: '1.5',
@@ -214,12 +219,14 @@ const ChatInput = () => {
           </div>
         </div>
 
-        {isJiraMode && !hasJiraNumber && (
+        {isIssueKeyMode && !hasJiraNumber && (
           <div className="mb-3">
             <input
               type="text"
               className="w-full bg-transparent border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50 text-lg outline-none focus:border-white/60 transition-colors"
-              placeholder="BPM-00000"
+              placeholder={
+                isJiraMode ? 'BPM-00000' : isCrMode ? 'BR-00000' : 'Issue Key'
+              }
               value={jiraTicketId}
               onChange={(e) => setJiraTicketId(e.target.value)}
               style={{
@@ -251,7 +258,7 @@ const ChatInput = () => {
               if (input.trim() !== '') {
                 handleSend(input);
                 setInput('');
-                if (isJiraMode) {
+                if (isIssueKeyMode) {
                   setJiraTicketId('');
                 }
               }

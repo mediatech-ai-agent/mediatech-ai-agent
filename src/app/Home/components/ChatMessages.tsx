@@ -1,9 +1,26 @@
-import { useCurrentMessages } from '@/stores/chatStore.ts';
+import { useCurrentMessages, useChatStore } from '@/stores/chatStore.ts';
 import { useEffect, useRef } from 'react';
 import MarkdownRenderer from '../../../shared/components/MarkdownRenderer';
 
+// HTML 렌더링 컴포넌트
+const HtmlRenderer = ({
+  content,
+  className,
+}: {
+  content: string;
+  className?: string;
+}) => {
+  return (
+    <div
+      className={`cr-html-content ${className || ''}`}
+      dangerouslySetInnerHTML={{ __html: content }}
+    />
+  );
+};
+
 const ChatMessages = () => {
   const messages = useCurrentMessages();
+  const { currentSession } = useChatStore();
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -11,11 +28,18 @@ const ChatMessages = () => {
   }, [messages]);
 
   return (
-    <div className="p-8 pt-12">
+    <div>
       {messages.map((msg) =>
         msg.sender === 'ai' ? (
           <div key={msg.id} className="mb-6 text-left w-fit">
-            <MarkdownRenderer content={msg.content} className="inline-block" />
+            {currentSession?.agentMode === 'cr' ? (
+              <HtmlRenderer content={msg.content} className="inline-block" />
+            ) : (
+              <MarkdownRenderer
+                content={msg.content}
+                className="inline-block"
+              />
+            )}
           </div>
         ) : (
           <div key={msg.id} className="flex justify-end">

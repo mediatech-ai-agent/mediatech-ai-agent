@@ -276,6 +276,12 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   ) => {
     const { currentSession, sessions } = get();
 
+    // 현재 세션이 없으면 새로운 일반 세션 생성 (agentMode: null)
+    if (!currentSession) {
+      set({ currentAgentMode: null });
+      get().createSession();
+    }
+
     // 임시 세션인지 확인 (currentSession이 있지만 sessions에 없는 경우)
     const isTemporarySession =
       currentSession &&
