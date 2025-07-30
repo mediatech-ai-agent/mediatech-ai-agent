@@ -1,4 +1,6 @@
 import { useChatStore } from '@/stores/chatStore.ts';
+import { useRequestAgent } from '@/shared/hooks/useRequestAgent';
+import { getBrowserSessionId } from '@/shared/utils/sessionId';
 import { ArrowUp, Link } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 
@@ -11,6 +13,7 @@ const ChatInput = () => {
     removeJiraNumber,
     currentSession,
   } = useChatStore();
+  const requestAgent = useRequestAgent();
   const [input, setInput] = useState('');
   const [isComposing, setIsComposing] = useState(false);
   const [jiraTicketId, setJiraTicketId] = useState('');
@@ -44,66 +47,52 @@ const ChatInput = () => {
     setIsComposing(false);
   };
 
-  const handleSend = (message: string) => {
+  const handleSend = async (message: string) => {
     let fullMessage = message;
+    let issueKey: string | undefined;
+
     if (isJiraMode && jiraTicketId.trim()) {
       fullMessage = `[${jiraTicketId.trim()}] ${message}`;
+      issueKey = jiraTicketId.trim();
       setJiraNumber(jiraTicketId.trim());
     }
 
     // 사용자 메시지 추가 (세션이 없으면 자동 생성됨)
     addUserMessage(fullMessage);
-
-    // AI 응답 시뮬레이션 (마크다운 형식)
     setAiResponding(true);
-    setTimeout(() => {
-      const markdownResponse =
-        isJiraMode && jiraTicketId.trim()
-          ? `
-## "${jiraTicketId}" 티켓 분석 결과
 
-안녕하세요! **${jiraTicketId}** 티켓에 대한 분석 결과입니다:
+    try {
+      // 실제 API 호출
+      const response = await requestAgent.mutateAsync({
+        question: message,
+        agent_type: currentSession?.agentMode || 'jira',
+        issue_key: issueKey,
+        session_id: getBrowserSessionId(),
+      });
 
-### 📋 티켓 정보
-- **티켓 ID**: ${jiraTicketId}
-- **요청 내용**: ${message}
+      // API 응답을 AI 메시지로 추가
+      addAiMessage(response.result);
+    } catch (error) {
+      console.error('API 요청 실패:', error);
 
-### 🔍 분석 결과
-- **상태**: 진행 중
-- **우선순위**: 중간
-- **담당자**: 개발팀
+      // 에러 시 fallback 메시지
+      const errorMessage = `
+## 죄송합니다. 일시적인 오류가 발생했습니다.
 
-### 📝 권장 사항
-1. **코드 리뷰** 필요
-2. **테스트 케이스** 작성 필요
-3. **문서화** 업데이트 필요
+현재 AI 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.
 
-> Jira 티켓 분석이 완료되었습니다. 추가 정보가 필요하시면 말씀해 주세요!
-        `
-          : `
-## "${message}"에 대한 AI 응답입니다.
+**오류 유형**: 네트워크 연결 오류
+**해결 방법**: 
+- 인터넷 연결을 확인해주세요
+- 잠시 후 다시 시도해주세요
+- 문제가 지속되면 관리자에게 문의해주세요
 
-안녕하세요! 다음과 같이 답변드립니다:
-
-### 주요 포인트
-- **중요한 내용**: 이것은 중요한 정보입니다
-- *강조된 텍스트*: 이것은 강조된 내용입니다
-- \`코드 예시\`: \`console.log('Hello')\`
-
-### 코드 블록 예시
-\`\`\`javascript
-function example() {
-  return "마크다운이 잘 렌더링됩니다!";
-}
-\`\`\`
-
-> 이것은 인용문입니다. 중요한 내용을 강조할 때 사용합니다.
-
-더 자세한 정보가 필요하시면 언제든 말씀해 주세요!
-        `;
-      addAiMessage(markdownResponse.trim());
+> 불편을 드려 죄송합니다. 🙏
+      `;
+      addAiMessage(errorMessage.trim());
+    } finally {
       setAiResponding(false);
-    }, 1000);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
