@@ -9,6 +9,7 @@ const ChatInput = () => {
   const {
     addUserMessage,
     addAiMessage,
+    addUserTempMessage,
     setAiResponding,
     setJiraNumber,
     removeJiraNumber,
@@ -17,12 +18,15 @@ const ChatInput = () => {
   const requestAgent = useRequestAgent();
   const jiraCardRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState('');
   const [isComposing, setIsComposing] = useState(false);
   const [jiraTicketId, setJiraTicketId] = useState('');
   const [jiraCardWidth, setJiraCardWidth] = useState(140);
   const [isSendBtnHovered, setIsSendBtnHovered] = useState(false);
+  const [isLinkBtnHovered, setIsLinkBtnHovered] = useState(false);
   const [showJiraCard, setShowJiraCard] = useState(true);
+  const [showLinkInput, setShowLinkInput] = useState(false);
 
   const isJiraMode = currentSession?.agentMode === 'jira';
   const isCrMode = currentSession?.agentMode === 'cr';
@@ -30,16 +34,12 @@ const ChatInput = () => {
   const isIssueKeyMode = isJiraMode || isCrMode;
 
   const ableSendMessage = useMemo(() => {
-    if (!input.trim()) {
-      return false;
+    if (showLinkInput) {
+      return jiraTicketId.trim() !== '';
+    } else {
+      return input.trim() !== '';
     }
-
-    if (isIssueKeyMode && !hasJiraNumber && !jiraTicketId) {
-      return false;
-    }
-
-    return true;
-  }, [input, isIssueKeyMode, jiraTicketId]);
+  }, [showLinkInput, jiraTicketId, input]);
 
   // Jira 카드 너비 측정
   useEffect(() => {
@@ -74,6 +74,39 @@ const ChatInput = () => {
     el.addEventListener('scroll', handleScroll);
     return () => el.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (
+      currentSession?.agentMode === 'jira' ||
+      currentSession?.agentMode === 'cr'
+    ) {
+      setShowLinkInput(true);
+    } else {
+      setShowLinkInput(false);
+    }
+  }, [currentSession?.agentMode]);
+
+  useEffect(() => {
+    if (showLinkInput && inputRef.current) {
+      inputRef.current.focus();
+      if (textareaRef.current) {
+        textareaRef.current.disabled = true;
+        textareaRef.current.style.cursor = 'not-allowed';
+      }
+    } else {
+      if (textareaRef.current) {
+        textareaRef.current.disabled = false;
+        textareaRef.current.style.cursor = 'auto';
+      }
+    }
+  }, [showLinkInput]);
+
+  // Jira 카드가 노출되면 input 숨기기
+  useEffect(() => {
+    if (hasJiraNumber) {
+      setShowLinkInput(false);
+    }
+  }, [hasJiraNumber]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
@@ -149,28 +182,49 @@ const ChatInput = () => {
     }
   };
 
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
+      e.preventDefault();
+
+      const jiraValue = jiraTicketId.trim();
+      if (!jiraValue) return;
+
+      // 세션이 없으면 임시 세션 생성
+      if (!currentSession) {
+        // 임시 세션 생성
+        addUserTempMessage(null);
+      }
+
+      // Jira 번호 설정
+      setJiraNumber(jiraValue);
+      setJiraTicketId('');
+      setShowLinkInput(false);
+      setShowJiraCard(true);
+    }
+  };
+
+  const handleTextAreaKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>
   ) => {
     if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
       e.preventDefault();
       if (ableSendMessage) {
         handleSend(input);
         setInput('');
-        if (isIssueKeyMode) {
-          setJiraTicketId('');
-        }
+        setJiraTicketId('');
       }
     }
   };
 
   const getPlaceholder = () => {
     const ticketPlaceholder = '에 대해 무엇이든 물어보세요';
+    if (hasJiraNumber) return ticketPlaceholder;
+
     switch (currentSession?.agentMode) {
       case 'jira':
-        return hasJiraNumber ? ticketPlaceholder : CHAT_INPUT_PLACEHOLDER.JIRA;
+        return CHAT_INPUT_PLACEHOLDER.JIRA;
       case 'cr':
-        return hasJiraNumber ? ticketPlaceholder : CHAT_INPUT_PLACEHOLDER.CR;
+        return CHAT_INPUT_PLACEHOLDER.CR;
       case 'policy':
         return CHAT_INPUT_PLACEHOLDER.POLICY;
       case 'person':
@@ -233,6 +287,7 @@ const ChatInput = () => {
                     e.preventDefault();
                     e.stopPropagation();
                     removeJiraNumber();
+                    setShowJiraCard(false);
                   }}
                   onMouseEnter={() => {
                     const card = jiraCardRef.current;
@@ -272,7 +327,7 @@ const ChatInput = () => {
               placeholder={getPlaceholder()}
               value={input}
               onChange={handleChange}
-              onKeyDown={handleKeyDown}
+              onKeyDown={handleTextAreaKeyDown}
               onCompositionStart={handleCompositionStart}
               onCompositionEnd={handleCompositionEnd}
               style={{
@@ -293,17 +348,22 @@ const ChatInput = () => {
           style={{ height: '120px' }}
         >
           {/* Jira Ticket ID input field */}
-          {isIssueKeyMode && !hasJiraNumber ? (
+          {showLinkInput ? (
             <div className="mb-4">
               <input
+                ref={inputRef}
                 type="text"
                 className="bg-transparent border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50 text-lg outline-none focus:border-white/60 transition-colors w-full"
                 placeholder={
-                  isJiraMode ? 'BPM-00000' : isCrMode ? 'BR-00000' : 'Issue Key'
+                  isJiraMode
+                    ? 'BPM-00000'
+                    : isCrMode
+                      ? 'BTVB-00000'
+                      : 'BPM-00000'
                 }
                 value={jiraTicketId}
                 onChange={(e) => setJiraTicketId(e.target.value)}
-                onKeyDown={handleKeyDown}
+                onKeyDown={handleInputKeyDown}
                 style={{
                   textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
                   height: '58px',
@@ -316,7 +376,38 @@ const ChatInput = () => {
           )}
 
           {/* Send button - 항상 같은 위치에 고정 */}
-          <div className="flex justify-end">
+          <div className="flex justify-between">
+            <Tooltip
+              content={'링크 추가하기'}
+              position="bottom"
+              show={isLinkBtnHovered}
+              className="z-10"
+            >
+              <button
+                type="submit"
+                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 relative overflow-hidden ${
+                  !showLinkInput && !hasJiraNumber ? 'block' : 'hidden'
+                }`}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                }}
+                onClick={() => {
+                  setShowLinkInput(true);
+                }}
+                onMouseEnter={() => {
+                  setIsLinkBtnHovered(true);
+                }}
+                onMouseLeave={() => {
+                  setIsLinkBtnHovered(false);
+                }}
+              >
+                <Link
+                  size={24}
+                  className={`text-white transition-colors duration-200`}
+                />
+              </button>
+            </Tooltip>
+
             <Tooltip
               content={'질문 보내기'}
               position="bottom"

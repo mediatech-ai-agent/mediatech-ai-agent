@@ -149,6 +149,8 @@ interface ChatActions {
     type?: MessageType,
     metadata?: ChatMessage['metadata']
   ) => void;
+  // 임시 세션 생성 (sessions에 저장하지 않음)
+  addUserTempMessage: (agentMode: AgentMode) => void;
   // 에이전트 모드 설정
   setAgentMode: (mode: AgentMode) => void;
   // AI 응답 상태 설정
@@ -332,6 +334,14 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     get().addMessage(content, 'ai', type, metadata);
   },
 
+  addUserTempMessage: (agentMode: AgentMode) => {
+    // 에이전트 모드 먼저 설정
+    set({ currentAgentMode: agentMode });
+
+    // 임시 세션 생성 (sessions에 저장하지 않음)
+    get().createTemporarySession();
+  },
+
   setAgentMode: (mode: AgentMode) => {
     set({ currentAgentMode: mode });
   },
@@ -380,17 +390,31 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
         updatedAt: new Date(),
       };
 
-      const updatedSessions = state.sessions.map((session) =>
-        session.id === state.currentSession!.id ? updatedSession : session
+      // 임시 세션인지 확인 (currentSession이 있지만 sessions에 없는 경우)
+      const isTemporarySession = !state.sessions.find(
+        (session) => session.id === state.currentSession!.id
       );
 
-      // 로컬 스토리지에 저장
-      saveSessions(updatedSessions);
+      if (isTemporarySession) {
+        // 임시 세션의 경우 currentSession만 업데이트
+        return {
+          ...state,
+          currentSession: updatedSession,
+        };
+      } else {
+        // 정식 세션의 경우 sessions 배열도 업데이트
+        const updatedSessions = state.sessions.map((session) =>
+          session.id === state.currentSession!.id ? updatedSession : session
+        );
 
-      return {
-        sessions: updatedSessions,
-        currentSession: updatedSession,
-      };
+        // 로컬 스토리지에 저장
+        saveSessions(updatedSessions);
+
+        return {
+          sessions: updatedSessions,
+          currentSession: updatedSession,
+        };
+      }
     });
   },
 
@@ -404,17 +428,31 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
         updatedAt: new Date(),
       };
 
-      const updatedSessions = state.sessions.map((session) =>
-        session.id === state.currentSession!.id ? updatedSession : session
+      // 임시 세션인지 확인 (currentSession이 있지만 sessions에 없는 경우)
+      const isTemporarySession = !state.sessions.find(
+        (session) => session.id === state.currentSession!.id
       );
 
-      // 로컬 스토리지에 저장
-      saveSessions(updatedSessions);
+      if (isTemporarySession) {
+        // 임시 세션의 경우 currentSession만 업데이트
+        return {
+          ...state,
+          currentSession: updatedSession,
+        };
+      } else {
+        // 정식 세션의 경우 sessions 배열도 업데이트
+        const updatedSessions = state.sessions.map((session) =>
+          session.id === state.currentSession!.id ? updatedSession : session
+        );
 
-      return {
-        sessions: updatedSessions,
-        currentSession: updatedSession,
-      };
+        // 로컬 스토리지에 저장
+        saveSessions(updatedSessions);
+
+        return {
+          sessions: updatedSessions,
+          currentSession: updatedSession,
+        };
+      }
     });
   },
 

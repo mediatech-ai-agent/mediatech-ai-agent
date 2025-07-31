@@ -4,7 +4,7 @@ import type { AgentMode } from '@/stores/chatStore';
 
 // 전용 API 클라이언트 인스턴스 생성
 const agentApiClient = new HttpClient({
-  baseURL: 'http://1.255.86.189:8080',
+  baseURL: 'https://1.255.86.189:8080',
   timeout: 30000, // 30초 타임아웃 (AI 응답 대기)
   retryOptions: {
     retries: 2,
