@@ -27,7 +27,7 @@ const AgentCard: React.FC<AgentCardProps> = ({
 
   const getImageSrc = (focused: boolean = false) => {
     const suffix = focused ? '_foc' : '';
-    return `/src/assets/${imageName}${suffix}.png`;
+    return `${import.meta.env.BASE_URL}assets/${imageName}${suffix}.png`;
   };
 
   const handleImageError = () => {

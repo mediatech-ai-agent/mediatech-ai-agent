@@ -79,7 +79,7 @@ body {
 }
 
 body {
-  background-image: url('./assets/bg_main.png');
+  /*background-image: url('./assets/bg_main.png');*/
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
