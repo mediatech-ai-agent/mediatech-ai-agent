@@ -165,6 +165,9 @@ interface ChatActions {
   removeJiraNumber: () => void;
   // 세션 고정/해제 토글
   togglePinSession: (sessionId: string) => void;
+  // 디버깅을 위한 함수들
+  debugStorage: () => any;
+  clearAllStorage: () => void;
 }
 
 export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
@@ -521,6 +524,39 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       };
     });
   },
+
+  // 디버깅을 위한 함수들
+  debugStorage: () => {
+    const allKeys = Object.keys(localStorage);
+    const chatKeys = allKeys.filter(
+      (key) => key.includes('chat') || key.includes('session')
+    );
+    console.log('All localStorage keys:', allKeys);
+    console.log('Chat-related keys:', chatKeys);
+    console.log(
+      'Chat sessions storage:',
+      chatStorage.get(SESSIONS_STORAGE_KEY)
+    );
+    return {
+      allKeys,
+      chatKeys,
+      sessions: chatStorage.get(SESSIONS_STORAGE_KEY),
+    };
+  },
+
+  clearAllStorage: () => {
+    // 모든 로컬스토리지 삭제
+    localStorage.clear();
+    // chat-sessions 네임스페이스 삭제
+    chatStorage.clear();
+    // 세션 상태 초기화
+    set({
+      sessions: [],
+      currentSession: null,
+      currentAgentMode: null,
+    });
+    console.log('All storage cleared');
+  },
 }));
 
 // 브라우저 이탈 시 세션 저장을 위한 이벤트 리스너 등록
@@ -560,3 +596,12 @@ export const useCurrentSession = () => {
 export const useCurrentAgentMode = () => {
   return useChatStore((state) => state.currentAgentMode);
 };
+
+// 개발 환경에서 디버깅을 위해 window 객체에 노출
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  (window as any).chatStore = {
+    debugStorage: () => useChatStore.getState().debugStorage(),
+    clearAllStorage: () => useChatStore.getState().clearAllStorage(),
+    getState: () => useChatStore.getState(),
+  };
+}
