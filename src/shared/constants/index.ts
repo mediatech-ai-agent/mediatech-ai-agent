@@ -18,4 +18,10 @@ export const ICON_PATH = {
     NORMAL: '/src/assets/sideMenu/ic_save_nor.png',
     SELECTED: '/src/assets/sideMenu/ic_save_sel.png',
   },
+  CHAT_HEADER: {
+    JIRA: '/src/assets/chatHeader/header_jira.png',
+    CR: '/src/assets/chatHeader/header_cr.png',
+    POLICY: '/src/assets/chatHeader/header_policy.png',
+    PERSON: '/src/assets/chatHeader/header_person.png',
+  },
 } as const;

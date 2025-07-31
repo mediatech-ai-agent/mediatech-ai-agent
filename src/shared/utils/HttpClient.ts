@@ -6,8 +6,7 @@ import type {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
-// @ts-expect-error: If no types, ignore for now
-import axiosRetry, { IAxiosRetryConfig } from 'axios-retry';
+import axiosRetry from 'axios-retry';
 import {
   config,
   logging,
@@ -15,12 +14,25 @@ import {
   currentEnvironment,
 } from '../../config/environment';
 
+// axios-retry 옵션 타입 정의
+interface RetryOptions {
+  retries?: number;
+  retryCondition?: (error: AxiosError) => boolean;
+  retryDelay?: (retryCount: number, error?: AxiosError) => number;
+  shouldResetTimeout?: boolean;
+  onRetry?: (
+    retryCount: number,
+    error: AxiosError,
+    requestConfig: AxiosRequestConfig
+  ) => void;
+}
+
 type HttpClientOptions = {
   baseURL?: string;
   defaultHeaders?: Record<string, string>;
   defaultParams?: Record<string, unknown>;
   timeout?: number;
-  retryOptions?: IAxiosRetryConfig;
+  retryOptions?: RetryOptions;
   onRequest?: (
     config: InternalAxiosRequestConfig
   ) => InternalAxiosRequestConfig;
@@ -53,7 +65,7 @@ export class HttpClient {
     });
 
     // 환경별 재시도 로직 설정
-    const defaultRetryOptions: IAxiosRetryConfig = {
+    const defaultRetryOptions: RetryOptions = {
       retries: config.features.devtools ? 1 : 3, // 개발환경에서는 재시도 적게
       retryCondition: (error: AxiosError) => {
         const status = error.response?.status;

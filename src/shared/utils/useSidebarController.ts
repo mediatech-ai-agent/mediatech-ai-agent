@@ -1,6 +1,10 @@
 import { useChatStore, type AgentMode } from '@/stores/chatStore.ts';
 import { ICON_PATH } from '@/shared/constants';
-import { getAgentMessage, isValidAgentType, type AgentType } from '@/shared/utils/common';
+import {
+  getAgentMessage,
+  isValidAgentType,
+  type AgentType,
+} from '@/shared/utils/common';
 
 export const MENU_HEADER_ITEMS = [
   {
@@ -11,27 +15,27 @@ export const MENU_HEADER_ITEMS = [
 ];
 
 export const MENU_ITEMS = [
-    {
-      id: 'jira',
-      title: 'Jira 요약하기',
-      icon: ICON_PATH.SIDE_MENU.JIRA,
-    },
-    {
-      id: 'cr',
-      title: 'CR 생성하기',
-      icon: ICON_PATH.SIDE_MENU.CR,
-    },
-    {
-      id: 'policy',
-      title: '정책 문의하기',
-      icon: ICON_PATH.SIDE_MENU.POLICY,
-    },
-    {
-      id: 'person',
-      title: '담당자 찾기',
-      icon: ICON_PATH.SIDE_MENU.PERSON,
-    },
-  ];
+  {
+    id: 'jira',
+    title: 'Jira 요약하기',
+    icon: ICON_PATH.SIDE_MENU.JIRA,
+  },
+  {
+    id: 'cr',
+    title: 'CR 생성하기',
+    icon: ICON_PATH.SIDE_MENU.CR,
+  },
+  {
+    id: 'policy',
+    title: '정책 문의하기',
+    icon: ICON_PATH.SIDE_MENU.POLICY,
+  },
+  {
+    id: 'person',
+    title: '담당자 찾기',
+    icon: ICON_PATH.SIDE_MENU.PERSON,
+  },
+];
 
 // 에이전트 모드에 따른 아이콘 매핑
 export const getIconByAgentMode = (agentMode: AgentMode): string => {
@@ -64,7 +68,7 @@ export const useSidebarController = () => {
         addAiMessageWithAgent(aiMessage, id as AgentType);
       }
     }
-  }
+  };
 
   const handleHistoryClick = (sessionId: string) => {
     selectSession(sessionId);
@@ -73,5 +77,5 @@ export const useSidebarController = () => {
   return {
     handleMenuClick,
     handleHistoryClick,
-  }
-}
+  };
+};

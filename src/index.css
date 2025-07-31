@@ -160,7 +160,12 @@ video {
 }
 
 .markdown-content p {
-  @apply text-white leading-relaxed mb-3 last:mb-0;
+  @apply text-white mb-4;
+  white-space: pre-wrap;
+}
+
+.markdown-content div {
+  white-space: pre-wrap;
 }
 
 .markdown-content ul {
@@ -320,14 +325,265 @@ video {
     /* Overall subtle glow */ 0 0 0 0.5px rgba(255, 255, 255, 0.03);
 }
 
-/* Full menu width variant */
+/* Full menu width variant - 반응형 + 1470px 이하 고정 */
 .menu-glass-full {
-  width: 280px;
-  height: 810px;
+  width: 280px; /* 1470px 이하에서 280px 고정 */
+  height: 100%; /* 부모 높이에 맞춤 */
 }
 
 /* Mini menu width variant */
 .menu-glass-mini {
   width: 92px;
-  height: 810px;
+  height: 100%; /* 부모 높이에 맞춤 */
+}
+
+/* CR 모드 HTML 응답 스타일링 */
+.cr-html-content {
+  color: white;
+  line-height: 1.6;
+}
+
+.cr-html-content h1,
+.cr-html-content h2,
+.cr-html-content h3,
+.cr-html-content h4,
+.cr-html-content h5,
+.cr-html-content h6 {
+  color: white;
+  font-weight: bold;
+  margin: 1.5em 0 0.5em 0;
+}
+
+.cr-html-content h1 {
+  font-size: 1.8em;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 0.5em;
+}
+
+.cr-html-content h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 0.3em;
+}
+
+.cr-html-content h3 {
+  font-size: 1.3em;
+}
+
+.cr-html-content p {
+  margin: 1em 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cr-html-content ul,
+.cr-html-content ol {
+  margin: 1em 0;
+  padding-left: 2em;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cr-html-content li {
+  margin: 0.5em 0;
+}
+
+.cr-html-content a {
+  color: rgb(139, 192, 255);
+  text-decoration: underline;
+}
+
+.cr-html-content a:hover {
+  color: rgb(159, 212, 255);
+}
+
+.cr-html-content strong,
+.cr-html-content b {
+  color: white;
+  font-weight: bold;
+}
+
+.cr-html-content em,
+.cr-html-content i {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.cr-html-content blockquote {
+  border-left: 4px solid rgba(255, 255, 255, 0.3);
+  padding-left: 1em;
+  margin: 1em 0;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.cr-html-content code {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.cr-html-content pre {
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.cr-html-content pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.cr-html-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cr-html-content th,
+.cr-html-content td {
+  padding: 0.8em;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cr-html-content th {
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: bold;
+  color: white;
+}
+
+.cr-html-content hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 2em 0;
+}
+
+/* Agent Card Grid - ChatInput 너비에 맞춤 */
+.agent-card-grid {
+  grid-template-columns: repeat(4, 1fr); /* 4개 카드 균등 분할 */
+  width: 100%; /* 부모 컨테이너 전체 너비 사용 */
+  gap: 20px !important; /* 1470px 이하에서 고정 간격 - 강제 적용 */
+}
+
+/* 레이아웃 CSS 변수 정의 */
+:root {
+  --sidebar-left: 100px;
+  --sidebar-width: 280px;
+  --main-left: 450px;
+  --main-right: 100px;
+  --main-height: 850px;
+  --chatinput-height: 236px;
+  --chatinput-max-width: 1192px;
+  --chatinput-padding: 32px;
+}
+
+/* 1470px 이하에서 고정값 강제 적용 */
+@media (max-width: 1470px) {
+  /* 사이드바 고정 */
+  .left-side-menu {
+    left: 100px !important;
+    max-height: 810px !important;
+    width: 280px !important;
+  }
+
+  /* 메인 영역 고정 */
+  main {
+    left: 480px !important;
+    right: 0px !important;
+    height: 850px !important;
+    max-width: 880px !important;
+    min-width: 880px !important;
+    width: 880px !important;
+    transform: translateX(0%) !important;
+  }
+
+  /* ChatInput 완전 고정 */
+  .chat-input-container {
+    max-width: 880px !important;
+    min-height: 236px !important;
+    max-height: 650px !important; /* 전체 컨테이너 최대 높이 고정 */
+    padding: 32px !important;
+    min-width: 880px !important;
+    width: 880px !important;
+    border-radius: 24px !important;
+  }
+
+  /* ChatInput 내부 textarea 고정 */
+  .chat-input-container textarea {
+    max-height: 450px !important; /* textarea 최대 높이 고정 */
+    min-height: 80px !important;
+  }
+
+  /* AgentCard 컨테이너 고정 */
+  .agent-card-grid-container {
+    max-width: 880px !important;
+    min-width: 880px !important;
+    width: 880px !important;
+  }
+
+  /* AgentCard Wrapper 고정 */
+  .agent-cards-wrapper {
+    padding-bottom: 286px !important;
+    padding-top: 0px !important;
+  }
+
+  /* AgentCard Grid 고정 */
+  .agent-card-grid {
+    gap: 20px !important;
+    max-width: 880px !important;
+    min-width: 880px !important;
+    width: 880px !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  /* AgentCard 개별 고정 */
+  .agent-card-grid > *,
+  .agent-card {
+    width: 211px !important; /* (880px - 20px*3간격) / 4 */
+    height: 211px !important;
+    min-width: 211px !important;
+    max-width: 211px !important;
+    min-height: 211px !important;
+    max-height: 211px !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+  }
+}
+
+/* 브라우저 높이 830px 이하에서 높이 고정 */
+@media (max-height: 830px) {
+  .left-side-menu {
+    height: 650px !important;
+    max-height: 650px !important;
+  }
+
+  main {
+    height: 650px !important;
+    max-height: 650px !important;
+  }
+}
+
+/* 1470px 이상에서만 반응형 변수 적용 */
+@media (min-width: 1470px) {
+  .agent-card-grid {
+    gap: 0.9vw !important; /* 1470px 이상에서만 반응형 간격 - 강제 적용 */
+  }
+
+  /* ChatInput 반응형 설정 */
+  .chat-input-container {
+    max-height: 800px !important; /* 전체 컨테이너 최대 높이 고정 */
+  }
+
+  /* ChatInput 내부 textarea 반응형 설정 */
+  .chat-input-container textarea {
+    max-height: 600px !important; /* textarea 최대 높이 고정 */
+    min-height: 80px !important;
+  }
 }

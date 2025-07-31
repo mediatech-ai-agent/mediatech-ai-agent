@@ -94,6 +94,7 @@ export interface ChatSession {
   title: string;
   messages: ChatMessage[];
   agentMode: AgentMode; // 해당 세션의 에이전트 모드
+  jiraNumber?: string; // Jira 티켓 번호 (BPM-00000 형태)
   createdAt: Date;
   updatedAt: Date;
   isPinned?: boolean; // 고정 상태
@@ -156,6 +157,10 @@ interface ChatActions {
   setLoading: (isLoading: boolean) => void;
   // 세션 제목 업데이트
   updateSessionTitle: (sessionId: string, title: string) => void;
+  // 세션의 Jira 번호 설정
+  setJiraNumber: (jiraNumber: string) => void;
+  // 세션의 Jira 번호 삭제
+  removeJiraNumber: () => void;
   // 세션 고정/해제 토글
   togglePinSession: (sessionId: string) => void;
 }
@@ -271,6 +276,12 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   ) => {
     const { currentSession, sessions } = get();
 
+    // 현재 세션이 없으면 새로운 일반 세션 생성 (agentMode: null)
+    if (!currentSession) {
+      set({ currentAgentMode: null });
+      get().createSession();
+    }
+
     // 임시 세션인지 확인 (currentSession이 있지만 sessions에 없는 경우)
     const isTemporarySession =
       currentSession &&
@@ -359,9 +370,59 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     });
   },
 
+  setJiraNumber: (jiraNumber: string) => {
+    set((state) => {
+      if (!state.currentSession) return state;
+
+      const updatedSession = {
+        ...state.currentSession,
+        jiraNumber,
+        updatedAt: new Date(),
+      };
+
+      const updatedSessions = state.sessions.map((session) =>
+        session.id === state.currentSession!.id ? updatedSession : session
+      );
+
+      // 로컬 스토리지에 저장
+      saveSessions(updatedSessions);
+
+      return {
+        sessions: updatedSessions,
+        currentSession: updatedSession,
+      };
+    });
+  },
+
+  removeJiraNumber: () => {
+    set((state) => {
+      if (!state.currentSession) return state;
+
+      const updatedSession = {
+        ...state.currentSession,
+        jiraNumber: undefined,
+        updatedAt: new Date(),
+      };
+
+      const updatedSessions = state.sessions.map((session) =>
+        session.id === state.currentSession!.id ? updatedSession : session
+      );
+
+      // 로컬 스토리지에 저장
+      saveSessions(updatedSessions);
+
+      return {
+        sessions: updatedSessions,
+        currentSession: updatedSession,
+      };
+    });
+  },
+
   togglePinSession: (sessionId: string) => {
     set((state) => {
-      const targetSessionIndex = state.sessions.findIndex((s) => s.id === sessionId);
+      const targetSessionIndex = state.sessions.findIndex(
+        (s) => s.id === sessionId
+      );
       if (targetSessionIndex === -1) return state;
 
       const targetSession = state.sessions[targetSessionIndex];
@@ -393,12 +454,15 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
         };
 
         // 다른 세션들 먼저 배치
-        const otherSessions = state.sessions.filter((session) => session.id !== sessionId);
-        
+        const otherSessions = state.sessions.filter(
+          (session) => session.id !== sessionId
+        );
+
         // 원래 인덱스가 있으면 그 위치에 삽입, 없으면 끝에 추가
-        const insertIndex = targetSession.originalIndex !== undefined 
-          ? Math.min(targetSession.originalIndex, otherSessions.length)
-          : otherSessions.length;
+        const insertIndex =
+          targetSession.originalIndex !== undefined
+            ? Math.min(targetSession.originalIndex, otherSessions.length)
+            : otherSessions.length;
 
         updatedSessions = [
           ...otherSessions.slice(0, insertIndex),
