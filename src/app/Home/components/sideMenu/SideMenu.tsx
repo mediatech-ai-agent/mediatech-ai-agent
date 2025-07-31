@@ -116,7 +116,7 @@ const SideMenu: React.FC<SideMenuProps> = React.memo(
           </div>
 
           {/* 에이전트 아이콘들 - 절대 위치 고정 */}
-          <div className="absolute top-[194px] left-6">
+          <div className="absolute top-[184px] left-6">
             {menuItems.map((item, index) => (
               <div
                 key={item.id}
