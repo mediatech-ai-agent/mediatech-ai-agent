@@ -135,17 +135,29 @@ const ChatInput = () => {
       setJiraNumber(jiraTicketId.trim());
     }
 
-    // 사용자 메시지 추가 (세션이 없으면 자동 생성됨)
+    // 세션이 없으면 미리 임시 세션을 생성하여 session_id 확보
+    let sessionId = currentSession?.id;
+    if (!currentSession) {
+      // 새로운 임시 세션을 생성하고 ID를 가져옴
+      const { createTemporarySession } = useChatStore.getState();
+      createTemporarySession();
+      sessionId = useChatStore.getState().currentSession?.id;
+    }
+
+    // 사용자 메시지 추가
     addUserMessage(fullMessage);
     setAiResponding(true);
+
+    // 최신 세션 정보 가져오기 (addUserMessage로 인해 변경될 수 있음)
+    const latestSession = useChatStore.getState().currentSession;
 
     try {
       // 실제 API 호출
       const response = await requestAgent.mutateAsync({
         question: message,
-        agent_type: currentSession?.agentMode ?? null,
-        issue_key: currentSession?.jiraNumber ?? issueKey,
-        session_id: currentSession?.id ?? '',
+        agent_type: latestSession?.agentMode ?? null,
+        issue_key: latestSession?.jiraNumber ?? issueKey,
+        session_id: latestSession?.id ?? sessionId ?? '',
       });
 
       // API 응답을 AI 메시지로 추가
