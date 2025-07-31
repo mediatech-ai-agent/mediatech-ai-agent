@@ -1,11 +1,8 @@
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { ArrowUp, Link } from 'lucide-react';
 import { useChatStore } from '@/stores/chatStore.ts';
 import { useRequestAgent } from '@/shared/hooks/useRequestAgent';
-import {
-  getCurrentSessionId,
-  getBrowserSessionId,
-} from '@/shared/utils/sessionId';
-import { ArrowUp, Link } from 'lucide-react';
-import React, { useState, useRef, useEffect } from 'react';
+import { Tooltip } from '@/shared/components';
 
 const ChatInput = () => {
   const {
@@ -17,16 +14,30 @@ const ChatInput = () => {
     currentSession,
   } = useChatStore();
   const requestAgent = useRequestAgent();
+  const jiraCardRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState('');
   const [isComposing, setIsComposing] = useState(false);
   const [jiraTicketId, setJiraTicketId] = useState('');
   const [jiraCardWidth, setJiraCardWidth] = useState(140);
-  const jiraCardRef = useRef<HTMLDivElement>(null);
+  const [isSendBtnHovered, setIsSendBtnHovered] = useState(false);
 
   const isJiraMode = currentSession?.agentMode === 'jira';
   const isCrMode = currentSession?.agentMode === 'cr';
   const hasJiraNumber = currentSession?.jiraNumber;
   const isIssueKeyMode = isJiraMode || isCrMode;
+
+  const ableSendMessage = useMemo(() => {
+    if (!input.trim()) {
+      return false;
+    }
+
+    if (isIssueKeyMode && !hasJiraNumber) {
+      return false;
+    }
+
+    return true;
+  }, [input, isIssueKeyMode, jiraTicketId]);
 
   // Jira 카드 너비 측정
   useEffect(() => {
@@ -35,6 +46,15 @@ const ChatInput = () => {
       setJiraCardWidth(cardWidth + 8); // 8px 여유 공간 추가
     }
   }, [hasJiraNumber]);
+
+  // textarea 높이 자동 조정
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + 'px';
+    }
+  }, [input]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
@@ -63,15 +83,12 @@ const ChatInput = () => {
     setAiResponding(true);
 
     try {
-      // 브라우저 세션 ID 조회 (없으면 새로 생성)
-      const browserSessionId = getCurrentSessionId() || getBrowserSessionId();
-
       // 실제 API 호출
       const response = await requestAgent.mutateAsync({
         question: message,
-        agent_type: currentSession?.agentMode || 'jira',
+        agent_type: currentSession?.agentMode ?? null,
         issue_key: currentSession?.jiraNumber ?? issueKey,
-        session_id: browserSessionId,
+        session_id: currentSession?.id ?? '',
       });
 
       // API 응답을 AI 메시지로 추가
@@ -121,7 +138,7 @@ const ChatInput = () => {
         width: 'clamp(1192px, 80vw, 1400px)', // 반응형
         maxWidth: '1192px', // 최대 너비 제한
         minHeight: '236px', // 고정 최소 높이
-        maxHeight: '600px', // 최대 높이 제한
+        maxHeight: '800px', // 최대 높이를 800px로 줄임
         background: 'rgba(255, 255, 255, 0.3)',
         backdropFilter: 'blur(6px)',
         WebkitBackdropFilter: 'blur(6px)',
@@ -132,10 +149,10 @@ const ChatInput = () => {
       }}
     >
       {/* Input area */}
-      <div className="flex flex-col h-full">
-        {/* Text input */}
-        <div className="mb-4 relative">
-          <div className="relative">
+      <div className="relative flex flex-col h-full">
+        {/* Textarea - 위쪽 영역 */}
+        <div className="flex-1 relative min-h-0">
+          <div className="relative h-full">
             {hasJiraNumber && (
               <div className="absolute left-0 top-0 z-10 group">
                 <div
@@ -196,6 +213,7 @@ const ChatInput = () => {
             )}
 
             <textarea
+              ref={textareaRef}
               className="w-full bg-transparent text-white placeholder-white/70 text-lg outline-none resize-none"
               placeholder={'B tv 개발에 필요한 무엇이든 물어보세요'}
               value={input}
@@ -205,82 +223,92 @@ const ChatInput = () => {
               onCompositionEnd={handleCompositionEnd}
               style={{
                 textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-                minHeight: isIssueKeyMode ? '44px' : '124px',
-                maxHeight: '676px',
+                minHeight: '80px',
+                maxHeight: '600px', // 고정 최대 높이
                 textIndent: hasJiraNumber ? `${jiraCardWidth + 20}px` : '0px',
                 lineHeight: '1.5',
-              }}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = target.scrollHeight + 'px';
+                padding: '0',
               }}
             />
           </div>
         </div>
 
-        {isIssueKeyMode && !hasJiraNumber && (
-          <div className="mb-3">
-            <input
-              type="text"
-              className="w-full bg-transparent border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50 text-lg outline-none focus:border-white/60 transition-colors"
-              placeholder={
-                isJiraMode ? 'BPM-00000' : isCrMode ? 'BR-00000' : 'Issue Key'
-              }
-              value={jiraTicketId}
-              onChange={(e) => setJiraTicketId(e.target.value)}
-              style={{
-                textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-                height: '58px',
-              }}
-            />
-          </div>
-        )}
-
-        {/* Buttons area - fixed at bottom */}
-        <div className="flex items-center justify-end">
-          {/* Send button */}
-          <button
-            type="submit"
-            disabled={!input.trim()}
-            className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 relative overflow-hidden"
-            style={
-              input.trim()
-                ? {
-                    background: 'rgba(255, 255, 255, 0.1)',
-                  }
-                : {
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    cursor: 'not-allowed',
-                  }
-            }
-            onClick={() => {
-              if (input.trim() !== '') {
-                handleSend(input);
-                setInput('');
-                if (isIssueKeyMode) {
-                  setJiraTicketId('');
+        {/* Bottom area - Input과 Send button 수직 배치 */}
+        <div
+          className="flex flex-col flex-shrink-0"
+          style={{ height: '120px' }}
+        >
+          {/* Jira Ticket ID input field */}
+          {isIssueKeyMode && !hasJiraNumber ? (
+            <div className="mb-4">
+              <input
+                type="text"
+                className="bg-transparent border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50 text-lg outline-none focus:border-white/60 transition-colors w-full"
+                placeholder={
+                  isJiraMode ? 'BPM-00000' : isCrMode ? 'BR-00000' : 'Issue Key'
                 }
-              }
-            }}
-            onMouseEnter={(e) => {
-              if (input.trim()) {
-                e.currentTarget.style.transform = 'scale(1.05)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (input.trim()) {
-                e.currentTarget.style.transform = 'scale(1)';
-              }
-            }}
-          >
-            <ArrowUp
-              size={24}
-              className={`${
-                input.trim() ? 'text-white' : 'text-white/40'
-              } transition-colors duration-200`}
-            />
-          </button>
+                value={jiraTicketId}
+                onChange={(e) => setJiraTicketId(e.target.value)}
+                style={{
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                  height: '58px',
+                }}
+              />
+            </div>
+          ) : (
+            /* input이 없을 때는 같은 높이의 빈 공간을 만들어서 send button 위치 고정 */
+            <div style={{ height: '58px', marginBottom: '16px' }}></div>
+          )}
+
+          {/* Send button - 항상 같은 위치에 고정 */}
+          <div className="flex justify-end">
+            <Tooltip
+              content={'질문 보내기'}
+              position="bottom"
+              show={isSendBtnHovered}
+              className="z-10"
+            >
+              <button
+                type="submit"
+                disabled={!ableSendMessage}
+                className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 relative overflow-hidden"
+                style={
+                  ableSendMessage
+                    ? {
+                        background: 'rgba(255, 255, 255, 0.1)',
+                      }
+                    : {
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        cursor: 'not-allowed',
+                      }
+                }
+                onClick={() => {
+                  if (ableSendMessage) {
+                    handleSend(input);
+                    setInput('');
+                    if (isIssueKeyMode) {
+                      setJiraTicketId('');
+                    }
+                  }
+                }}
+                onMouseEnter={() => {
+                  if (ableSendMessage) {
+                    setIsSendBtnHovered(true);
+                  }
+                }}
+                onMouseLeave={() => {
+                  setIsSendBtnHovered(false);
+                }}
+              >
+                <ArrowUp
+                  size={24}
+                  className={`${
+                    ableSendMessage ? 'text-white' : 'text-white/40'
+                  } transition-colors duration-200`}
+                />
+              </button>
+            </Tooltip>
+          </div>
         </div>
       </div>
     </div>

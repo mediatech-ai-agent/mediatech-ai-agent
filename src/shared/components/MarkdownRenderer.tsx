@@ -17,6 +17,14 @@ const MarkdownRenderer = ({
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[]}
         skipHtml={false}
+        components={{
+          p: ({ children }) => (
+            <p style={{ whiteSpace: 'pre-wrap' }}>{children}</p>
+          ),
+          div: ({ children }) => (
+            <div style={{ whiteSpace: 'pre-wrap' }}>{children}</div>
+          ),
+        }}
       >
         {content}
       </ReactMarkdown>

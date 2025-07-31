@@ -31,7 +31,7 @@ const ChatMessages = () => {
     <div>
       {messages.map((msg) =>
         msg.sender === 'ai' ? (
-          <div key={msg.id} className="mb-6 text-left w-fit">
+          <div key={msg.id} className="mt-10 mb-6 text-left w-fit">
             {currentSession?.agentMode === 'cr' ? (
               <HtmlRenderer content={msg.content} className="inline-block" />
             ) : (

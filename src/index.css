@@ -160,7 +160,12 @@ video {
 }
 
 .markdown-content p {
-  @apply text-white leading-relaxed mb-3 last:mb-0;
+  @apply text-white mb-4;
+  white-space: pre-wrap;
+}
+
+.markdown-content div {
+  white-space: pre-wrap;
 }
 
 .markdown-content ul {
@@ -503,12 +508,17 @@ video {
   .chat-input-container {
     max-width: 880px !important;
     min-height: 236px !important;
-    height: 236px !important;
+    max-height: 650px !important; /* 전체 컨테이너 최대 높이 고정 */
     padding: 32px !important;
-    max-width: 880px !important;
     min-width: 880px !important;
     width: 880px !important;
     border-radius: 24px !important;
+  }
+
+  /* ChatInput 내부 textarea 고정 */
+  .chat-input-container textarea {
+    max-height: 450px !important; /* textarea 최대 높이 고정 */
+    min-height: 80px !important;
   }
 
   /* AgentCard 컨테이너 고정 */
@@ -536,12 +546,12 @@ video {
   /* AgentCard 개별 고정 */
   .agent-card-grid > *,
   .agent-card {
-    width: 211 !important; /* (1128px - 20px*3간격) / 4 */
-    height: 211 !important;
-    min-width: 211 !important;
-    max-width: 211 !important;
-    min-height: 211 !important;
-    max-height: 211 !important;
+    width: 211px !important; /* (880px - 20px*3간격) / 4 */
+    height: 211px !important;
+    min-width: 211px !important;
+    max-width: 211px !important;
+    min-height: 211px !important;
+    max-height: 211px !important;
     flex-shrink: 0 !important;
     flex-grow: 0 !important;
   }
@@ -564,5 +574,16 @@ video {
 @media (min-width: 1470px) {
   .agent-card-grid {
     gap: 0.9vw !important; /* 1470px 이상에서만 반응형 간격 - 강제 적용 */
+  }
+
+  /* ChatInput 반응형 설정 */
+  .chat-input-container {
+    max-height: 800px !important; /* 전체 컨테이너 최대 높이 고정 */
+  }
+
+  /* ChatInput 내부 textarea 반응형 설정 */
+  .chat-input-container textarea {
+    max-height: 600px !important; /* textarea 최대 높이 고정 */
+    min-height: 80px !important;
   }
 }
