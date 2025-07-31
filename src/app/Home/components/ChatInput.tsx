@@ -3,6 +3,7 @@ import { ArrowUp, Link } from 'lucide-react';
 import { useChatStore } from '@/stores/chatStore.ts';
 import { useRequestAgent } from '@/shared/hooks/useRequestAgent';
 import { Tooltip } from '@/shared/components';
+import { CHAT_INPUT_PLACEHOLDER } from '@/shared/constants';
 
 const ChatInput = () => {
   const {
@@ -21,6 +22,7 @@ const ChatInput = () => {
   const [jiraTicketId, setJiraTicketId] = useState('');
   const [jiraCardWidth, setJiraCardWidth] = useState(140);
   const [isSendBtnHovered, setIsSendBtnHovered] = useState(false);
+  const [showJiraCard, setShowJiraCard] = useState(true);
 
   const isJiraMode = currentSession?.agentMode === 'jira';
   const isCrMode = currentSession?.agentMode === 'cr';
@@ -55,6 +57,23 @@ const ChatInput = () => {
         textareaRef.current.scrollHeight + 'px';
     }
   }, [input]);
+
+  // Jira 카드 표시 여부 체크
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+
+    const lineHeight = parseFloat('20');
+
+    const handleScroll = () => {
+      console.log('scrollTop:', el.scrollTop, 'lineHeight:', lineHeight);
+      const shouldHide = el.scrollTop >= lineHeight;
+      setShowJiraCard(!shouldHide);
+    };
+
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
@@ -145,6 +164,22 @@ const ChatInput = () => {
     }
   };
 
+  const getPlaceholder = () => {
+    const ticketPlaceholder = '에 대해 무엇이든 물어보세요';
+    switch (currentSession?.agentMode) {
+      case 'jira':
+        return hasJiraNumber ? ticketPlaceholder : CHAT_INPUT_PLACEHOLDER.JIRA;
+      case 'cr':
+        return hasJiraNumber ? ticketPlaceholder : CHAT_INPUT_PLACEHOLDER.CR;
+      case 'policy':
+        return CHAT_INPUT_PLACEHOLDER.POLICY;
+      case 'person':
+        return CHAT_INPUT_PLACEHOLDER.PERSON;
+      default:
+        return CHAT_INPUT_PLACEHOLDER.DEFAULT;
+    }
+  };
+
   return (
     <div
       className="fixed bottom-0 overflow-hidden chat-input-container"
@@ -169,8 +204,11 @@ const ChatInput = () => {
         {/* Textarea - 위쪽 영역 */}
         <div className="flex-1 relative min-h-0">
           <div className="relative h-full">
-            {hasJiraNumber && (
-              <div className="absolute left-0 top-0 z-10 group">
+            {hasJiraNumber && showJiraCard && (
+              <div
+                className="absolute left-0 z-10 group"
+                style={{ top: '-10px' }}
+              >
                 <div
                   ref={jiraCardRef}
                   className="flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg flex-shrink-0 transition-opacity duration-200"
@@ -231,7 +269,7 @@ const ChatInput = () => {
             <textarea
               ref={textareaRef}
               className="w-full bg-transparent text-white placeholder-white/70 text-lg outline-none resize-none"
-              placeholder={'B tv 개발에 필요한 무엇이든 물어보세요'}
+              placeholder={getPlaceholder()}
               value={input}
               onChange={handleChange}
               onKeyDown={handleKeyDown}

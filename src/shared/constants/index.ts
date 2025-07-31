@@ -25,3 +25,11 @@ export const ICON_PATH = {
     PERSON: `${import.meta.env.BASE_URL}assets/chatHeader/header_person.png`,
   },
 } as const;
+
+export const CHAT_INPUT_PLACEHOLDER = {
+  JIRA: 'Jira 일감 번호를 입력해 주세요',
+  CR: 'BR 번호를 입력해 주세요',
+  POLICY: '"홈 배너 노출 조건이 뭐야?"라고 질문해 보세요',
+  PERSON: '"홈 전시 담당하는 개발자와 UI담당자를 알려줘"라고 요청해 보세요',
+  DEFAULT: 'B tv 개발에 필요한 무엇이든 물어보세요',
+};
