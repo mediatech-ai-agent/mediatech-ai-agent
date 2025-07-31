@@ -32,7 +32,7 @@ const ChatInput = () => {
       return false;
     }
 
-    if (isIssueKeyMode && !hasJiraNumber) {
+    if (isIssueKeyMode && !hasJiraNumber && !jiraTicketId) {
       return false;
     }
 
@@ -97,7 +97,9 @@ const ChatInput = () => {
       console.error('API 요청 실패:', error);
 
       // 에러 시 fallback 메시지
-      const errorMessage = `
+      const errorMessage =
+        currentSession?.agentMode !== 'cr'
+          ? `
 ## 죄송합니다. 일시적인 오류가 발생했습니다.
 
 현재 AI 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.
@@ -109,17 +111,31 @@ const ChatInput = () => {
 - 문제가 지속되면 관리자에게 문의해주세요
 
 > 불편을 드려 죄송합니다. 🙏
-      `;
+      `
+          : `<div class="markdown-content text-white leading-relaxed inline-block"><h2>죄송합니다. 일시적인 오류가 발생했습니다.</h2>
+<p style="white-space: pre-wrap;">현재 AI 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.</p>
+<p style="white-space: pre-wrap;"><strong>오류 유형</strong>: 네트워크 연결 오류
+<strong>해결 방법</strong>:</p>
+<ul>
+<li>인터넷 연결을 확인해주세요</li>
+<li>잠시 후 다시 시도해주세요</li>
+<li>문제가 지속되면 관리자에게 문의해주세요</li>
+</ul>
+<blockquote>
+<p style="white-space: pre-wrap;">불편을 드려 죄송합니다. 🙏</p>
+</blockquote></div>`;
       addAiMessage(errorMessage.trim());
     } finally {
       setAiResponding(false);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) => {
     if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
       e.preventDefault();
-      if (input.trim() !== '') {
+      if (ableSendMessage) {
         handleSend(input);
         setInput('');
         if (isIssueKeyMode) {
@@ -249,6 +265,7 @@ const ChatInput = () => {
                 }
                 value={jiraTicketId}
                 onChange={(e) => setJiraTicketId(e.target.value)}
+                onKeyDown={handleKeyDown}
                 style={{
                   textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
                   height: '58px',
