@@ -76,15 +76,20 @@ const ChatInput = () => {
   }, []);
 
   useEffect(() => {
+    setJiraTicketId('');
+
     if (
       currentSession?.agentMode === 'jira' ||
       currentSession?.agentMode === 'cr'
     ) {
-      setShowLinkInput(true);
+      // jira/cr 모드에서는 jira number가 없을 때만 input 노출
+      if (!hasJiraNumber) {
+        setShowLinkInput(true);
+      }
     } else {
       setShowLinkInput(false);
     }
-  }, [currentSession?.agentMode]);
+  }, [currentSession?.agentMode, hasJiraNumber]);
 
   useEffect(() => {
     if (showLinkInput && inputRef.current) {
@@ -288,6 +293,11 @@ const ChatInput = () => {
                     e.stopPropagation();
                     removeJiraNumber();
                     setShowJiraCard(false);
+
+                    // jira, cr 모드일 때는 무조건 input 노출
+                    if (isJiraMode || isCrMode) {
+                      setShowLinkInput(true);
+                    }
                   }}
                   onMouseEnter={() => {
                     const card = jiraCardRef.current;
