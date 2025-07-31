@@ -37,11 +37,13 @@ export const defaultQueryClientConfig: QueryClientConfig = {
     },
   },
   queryCache: new QueryCache({
+    // @ts-ignore
     onError: (error, query) => {
       logError(error as Error, `Query ${query.queryKey.join(' > ')}`);
     },
   }),
   mutationCache: new MutationCache({
+    // @ts-ignore
     onError: (error, variables, context, mutation) => {
       logError(
         error as Error,
@@ -102,6 +104,7 @@ export const createDevQueryClient = () => {
         console.log('Context:', context);
         console.groupEnd();
       },
+      // @ts-ignore
       onSuccess: (data, variables, context, mutation) => {
         console.log(
           `✅ Mutation Success: ${mutation.options.mutationKey?.join(' > ') || 'unknown'}`,

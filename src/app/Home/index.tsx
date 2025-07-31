@@ -21,12 +21,8 @@ import { SideMenu } from './components/sideMenu';
 const Home = () => {
   const messages = useCurrentMessages();
   const sessions = useChatSessions();
-  const { togglePinSession, currentSession } = useChatStore();
+  const { togglePinSession } = useChatStore();
 
-  // 사용자 메시지가 있는지 확인
-  const hasUserMessage =
-    currentSession?.messages?.some((message) => message.sender === 'user') ||
-    false;
   const { handleMenuClick, handleHistoryClick } = useSidebarController();
   const { isCollapsed, toggle } = useSidebarToggle();
 

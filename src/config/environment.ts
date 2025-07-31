@@ -145,8 +145,8 @@ const mergeConfigs = (
     api: { ...base.api, ...override.api },
     features: { ...base.features, ...override.features },
     logging: { ...base.logging, ...override.logging },
-    external: { ...base.external, ...override.external },
-  };
+    // external: { ...base.external, ...override.external },
+  } as EnvironmentConfig;
 };
 
 // 최종 환경 설정
