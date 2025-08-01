@@ -71,13 +71,35 @@ const ChatMessages = () => {
     }
   }, [currentSession?.id]);
 
-  // 세션 변경 시 타이핑 상태 초기화
+  // 세션 변경 시 타이핑 상태 초기화 및 임시 세션의 첫 AI 메시지에 타이핑 효과 적용
   useEffect(() => {
     if (currentSession?.id !== currentSessionIdRef.current) {
       setNewMessageId(null);
+
+      // 임시 세션이고 첫 번째 메시지가 AI 메시지인 경우에만 타이핑 효과 적용
+      const isTemporarySession =
+        currentSession?.id?.startsWith('temp_session_');
+      if (
+        isTemporarySession &&
+        currentSession?.id &&
+        messages.length === 1 &&
+        messages[0]?.sender === 'ai'
+      ) {
+        const firstAiMessage = messages[0];
+        setNewMessageId(firstAiMessage.id);
+
+        // 타이핑 완료 후 상태 제거
+        setTimeout(
+          () => {
+            setNewMessageId(null);
+          },
+          firstAiMessage.content.length * 15 + 1000 // 안내 메시지는 조금 더 빠르게
+        );
+      }
+
       currentSessionIdRef.current = currentSession?.id;
     }
-  }, [currentSession?.id]);
+  }, [currentSession?.id, messages]);
 
   // AI 응답이 완료된 직후의 메시지에만 타이핑 효과 적용
   useEffect(() => {
