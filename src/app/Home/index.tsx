@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useRef, useEffect } from 'react';
 import { ICON_PATH } from '@/shared/constants';
 import { useSidebarToggle } from '@/shared/hooks/useSidebarToggle';
 import {
@@ -11,6 +11,7 @@ import {
   useChatSessions,
   useCurrentMessages,
   useChatStore,
+  useIsSessionLoading,
 } from '@/stores/chatStore.ts';
 import AgentCardGrid from './components/AgentCardGrid';
 import ChatHeader from './components/ChatHeader';
@@ -21,7 +22,9 @@ import { SideMenu } from './components/sideMenu';
 const Home = () => {
   const messages = useCurrentMessages();
   const sessions = useChatSessions();
-  const { togglePinSession } = useChatStore();
+  const { togglePinSession, currentSession } = useChatStore();
+  const isSessionLoading = useIsSessionLoading();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const { handleMenuClick, handleHistoryClick } = useSidebarController();
   const { isCollapsed, toggle } = useSidebarToggle();
@@ -62,6 +65,39 @@ const Home = () => {
     },
     [togglePinSession]
   );
+
+  // 세션 로딩 완료 시 스크롤을 맨 아래로 이동
+  useEffect(() => {
+    if (currentSession?.id && !isSessionLoading && scrollContainerRef.current) {
+      // 더 안정적인 스크롤 설정을 위해 여러 단계로 처리
+      const scrollToBottom = () => {
+        if (scrollContainerRef.current) {
+          const container = scrollContainerRef.current;
+          container.scrollTop = container.scrollHeight;
+
+          // 스크롤이 제대로 적용되었는지 확인하고, 안 되었으면 재시도
+          requestAnimationFrame(() => {
+            if (
+              container.scrollTop <
+              container.scrollHeight - container.clientHeight - 10
+            ) {
+              container.scrollTop = container.scrollHeight;
+            }
+          });
+        }
+      };
+
+      // 첫 번째 시도: 즉시
+      requestAnimationFrame(() => {
+        scrollToBottom();
+
+        // 두 번째 시도: 약간의 지연 후 (DOM 업데이트 완료 보장)
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
+      });
+    }
+  }, [currentSession?.id, isSessionLoading]);
 
   return (
     <div className="overflow-hidden relative min-h-screen">
@@ -121,6 +157,7 @@ const Home = () => {
           <>
             <ChatHeader />
             <div
+              ref={scrollContainerRef}
               className="overflow-y-auto custom-scrollbar"
               style={{
                 position: 'absolute',
@@ -133,7 +170,7 @@ const Home = () => {
                 paddingBottom: '20px',
               }}
             >
-              <ChatMessages />
+              <ChatMessages scrollContainerRef={scrollContainerRef} />
             </div>
           </>
         )}
