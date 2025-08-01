@@ -169,33 +169,10 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
     }
   }, [messages, isSessionLoading, sessionChangedRecently, isAiResponding]);
 
-  // 세션 변경 시 타이핑 상태 초기화, 스크롤 금지, 임시 세션의 첫 AI 메시지에 타이핑 효과 적용
+  // 세션 변경 시 스크롤 관련 상태 초기화
   useEffect(() => {
     if (currentSession?.id !== currentSessionIdRef.current) {
-      setNewMessageId(null);
       setSessionChangedRecently(true);
-
-      // 임시 세션이고 첫 번째 메시지가 AI 메시지인 경우에만 타이핑 효과 적용
-      const isTemporarySession =
-        currentSession?.id?.startsWith('temp_session_');
-      if (
-        isTemporarySession &&
-        currentSession?.id &&
-        messages.length === 1 &&
-        messages[0]?.sender === 'ai'
-      ) {
-        const firstAiMessage = messages[0];
-        setNewMessageId(firstAiMessage.id);
-
-        // 타이핑 완료 후 상태 제거
-        setTimeout(
-          () => {
-            setNewMessageId(null);
-          },
-          firstAiMessage.content.length * 15 + 1000 // 안내 메시지는 조금 더 빠르게
-        );
-      }
-
       currentSessionIdRef.current = currentSession?.id;
 
       // 세션 변경 후 600ms 동안은 ChatMessages에서 스크롤하지 않음
@@ -203,7 +180,7 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
         setSessionChangedRecently(false);
       }, 600);
     }
-  }, [currentSession?.id, messages]);
+  }, [currentSession?.id]);
 
   // AI 응답 상태 변화 감지 및 스크롤 위치 저장
   useEffect(() => {
@@ -225,8 +202,19 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
       }
     }
 
-    // AI 응답이 방금 완료되었을 때만 (true -> false로 변경)
-    if (wasResponding && !isNowResponding && messages.length > 0) {
+    // AI 응답이 방금 완료되었을 때 타이핑 적용
+    const isTemporaryToPermament =
+      sessionChangedRecently &&
+      currentSession?.id?.startsWith('session_') && // 정식 세션
+      messages.length > 1 && // 대화가 진행됨
+      messages[messages.length - 2]?.sender === 'user'; // 바로 전 메시지가 사용자 메시지
+
+    if (
+      wasResponding &&
+      !isNowResponding &&
+      messages.length > 0 &&
+      (!sessionChangedRecently || isTemporaryToPermament)
+    ) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage && lastMessage.sender === 'ai') {
         setNewMessageId(lastMessage.id);
@@ -239,8 +227,10 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
           lastMessage.content.length * 10 + 1000
         );
       }
+    }
 
-      // AI 응답 완료 시 스크롤 위치 저장 해제
+    // AI 응답 완료 시 스크롤 위치 저장 해제
+    if (wasResponding && !isNowResponding) {
       setUserScrollPosition(null);
     }
 
@@ -288,13 +278,25 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
               <HtmlRenderer
                 content={msg.content}
                 className="inline-block"
-                enableTyping={msg.id === newMessageId}
+                enableTyping={
+                  msg.id === newMessageId ||
+                  // 임시 세션의 안내메시지
+                  (currentSession?.id?.startsWith('temp_session_') &&
+                    messages.every((m) => m.sender === 'ai') &&
+                    msg.id === messages[messages.length - 1]?.id)
+                }
               />
             ) : (
               <TypewriterMarkdownRenderer
                 content={msg.content}
                 className="inline-block"
-                enableTyping={msg.id === newMessageId}
+                enableTyping={
+                  msg.id === newMessageId ||
+                  // 임시 세션의 안내메시지
+                  (currentSession?.id?.startsWith('temp_session_') &&
+                    messages.every((m) => m.sender === 'ai') &&
+                    msg.id === messages[messages.length - 1]?.id)
+                }
               />
             )}
           </div>

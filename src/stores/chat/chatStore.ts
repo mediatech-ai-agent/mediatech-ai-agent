@@ -208,6 +208,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+
     set({ currentSession: newSession });
     get().addMessage(content, 'ai', type, metadata);
   },
@@ -355,12 +356,6 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
         isPinning
       );
 
-      console.log(
-        isPinning
-          ? `📌 세션 고정: "${targetSession.title}" (고정된 대화 맨 위로 이동)`
-          : `🔓 세션 고정 해제: "${targetSession.title}" (일반 대화 맨 위로 이동)`
-      );
-
       saveSessions(updatedSessions);
 
       return {
@@ -378,18 +373,11 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     const totalSize = getLocalStorageSize();
     const sessionsSize = getSessionsDataSize(sessions);
 
-    console.log('📊 스토리지 크기 정보:');
-    console.log(
-      '  - 전체 로컬스토리지:',
-      (totalSize / 1024 / 1024).toFixed(2),
-      'MB'
-    );
-    console.log(
-      '  - 세션 데이터:',
-      (sessionsSize / 1024 / 1024).toFixed(2),
-      'MB'
-    );
-    console.log('  - 세션 개수:', sessions.length);
+    return {
+      totalSize: (totalSize / 1024 / 1024).toFixed(2),
+      sessionsSize: (sessionsSize / 1024 / 1024).toFixed(2),
+      sessionCount: sessions.length,
+    };
   },
 
   manualDeleteOldSessions: () => {
@@ -433,26 +421,28 @@ if (typeof window !== 'undefined') {
     (window as any).manualDeleteOldSessions = () =>
       useChatStore.getState().manualDeleteOldSessions();
     (window as any).debugLocalStorage = () => {
-      console.log('🔍 localStorage 전체 내용:');
+      const allEntries = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key) {
-          const value = localStorage.getItem(key);
-          console.log(`  ${key}:`, value);
+          allEntries.push({ key, value: localStorage.getItem(key) });
         }
       }
 
-      console.log('\n🔍 chat-sessions 네임스페이스:');
       const chatKeys = Object.keys(localStorage).filter((key) =>
         key.includes('chat')
       );
-      chatKeys.forEach((key) => {
-        console.log(`  ${key}:`, localStorage.getItem(key));
-      });
+      const chatEntries = chatKeys.map((key) => ({
+        key,
+        value: localStorage.getItem(key),
+      }));
 
-      console.log('\n🔍 현재 스토어 상태:');
-      console.log('  sessions:', useChatStore.getState().sessions);
-      console.log('  currentSession:', useChatStore.getState().currentSession);
+      const storeState = {
+        sessions: useChatStore.getState().sessions,
+        currentSession: useChatStore.getState().currentSession,
+      };
+
+      return { allEntries, chatEntries, storeState };
     };
   }
 }

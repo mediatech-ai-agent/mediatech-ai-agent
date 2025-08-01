@@ -29,27 +29,16 @@ export const autoDeleteOldSessions = (
   const TARGET_SIZE = 3.8 * 1024 * 1024; // 3.8MB
 
   const currentDataSize = getSessionsDataSize(sessions);
-  console.log(
-    '📊 현재 세션 데이터 크기:',
-    (currentDataSize / 1024 / 1024).toFixed(2),
-    'MB'
-  );
 
   if (currentDataSize <= TARGET_SIZE) {
-    console.log('✅ 크기가 목표치 이하입니다. 삭제 불필요.');
     return sessions;
   }
-
-  console.log('⚠️ 크기가 목표치를 초과했습니다. 자동 삭제를 시작합니다...');
 
   // 고정되지 않은 세션들만 필터링하고 생성일 기준으로 정렬 (오래된 것부터)
   const pinnedSessions = sessions.filter((session) => session.isPinned);
   const unpinnedSessions = sessions
     .filter((session) => !session.isPinned)
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-
-  console.log('📌 고정된 세션 수:', pinnedSessions.length);
-  console.log('📄 일반 세션 수:', unpinnedSessions.length);
 
   const remainingSessions = [...pinnedSessions];
 
@@ -61,24 +50,8 @@ export const autoDeleteOldSessions = (
 
     if (tempSize <= TARGET_SIZE) {
       remainingSessions.unshift(session); // 맨 앞에 추가 (최신순 유지)
-    } else {
-      console.log(
-        '🗑️ 세션 삭제됨:',
-        session.title,
-        '(생성일:',
-        session.createdAt.toLocaleDateString(),
-        ')'
-      );
     }
   }
-
-  const deletedCount = sessions.length - remainingSessions.length;
-  const finalSize = getSessionsDataSize(remainingSessions);
-
-  console.log('🎯 자동 삭제 완료!');
-  console.log('  - 삭제된 세션 수:', deletedCount);
-  console.log('  - 최종 크기:', (finalSize / 1024 / 1024).toFixed(2), 'MB');
-  console.log('  - 남은 세션 수:', remainingSessions.length);
 
   return sortSessionsWithPinnedFirst(remainingSessions);
 };

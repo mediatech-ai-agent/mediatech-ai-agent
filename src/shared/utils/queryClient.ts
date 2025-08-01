@@ -85,34 +85,22 @@ export const createDevQueryClient = () => {
     },
     queryCache: new QueryCache({
       onError: (error, query) => {
-        console.group(`🔴 Query Error: ${query.queryKey.join(' > ')}`);
-        console.error('Error:', error);
-        console.log('Query:', query);
-        console.groupEnd();
-      },
-      onSuccess: (data, query) => {
-        console.log(`✅ Query Success: ${query.queryKey.join(' > ')}`, data);
+        if (process.env.NODE_ENV === 'development') {
+          console.group(`🔴 Query Error: ${query.queryKey.join(' > ')}`);
+          console.error('Error:', error);
+          console.groupEnd();
+        }
       },
     }),
     mutationCache: new MutationCache({
       onError: (error, variables, context, mutation) => {
-        console.group(
-          `🔴 Mutation Error: ${mutation.options.mutationKey?.join(' > ') || 'unknown'}`
-        );
-        console.error('Error:', error);
-        console.log('Variables:', variables);
-        console.log('Context:', context);
-        console.groupEnd();
-      },
-      // @ts-ignore
-      onSuccess: (data, variables, context, mutation) => {
-        console.log(
-          `✅ Mutation Success: ${mutation.options.mutationKey?.join(' > ') || 'unknown'}`,
-          {
-            data,
-            variables,
-          }
-        );
+        if (process.env.NODE_ENV === 'development') {
+          console.group(
+            `🔴 Mutation Error: ${mutation.options.mutationKey?.join(' > ') || 'unknown'}`
+          );
+          console.error('Error:', error);
+          console.groupEnd();
+        }
       },
     }),
   });
@@ -135,6 +123,8 @@ export const createTestQueryClient = () => {
 
 // 쿼리 상태 디버깅을 위한 헬퍼
 export const debugQueryState = (queryClient: QueryClient) => {
+  if (process.env.NODE_ENV !== 'development') return;
+
   const cache = queryClient.getQueryCache();
   const queries = cache.getAll();
 

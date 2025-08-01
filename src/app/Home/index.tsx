@@ -25,6 +25,16 @@ const Home = () => {
   const sessions = useChatSessions();
   const { togglePinSession, currentSession, isAiResponding } = useChatStore();
   const isSessionLoading = useIsSessionLoading();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [aiResponseStartTime, setAiResponseStartTime] = useState<number | null>(
+    null
+  );
+  const [userHasScrolled, setUserHasScrolled] = useState(false);
+  const lastScrollTopRef = useRef<number>(0);
+
+  const { handleMenuClick, handleHistoryClick } = useSidebarController();
+  const { isCollapsed, toggle } = useSidebarToggle();
 
   // AI 응답 상태 및 시작 시간 추적
   useEffect(() => {
@@ -47,16 +57,6 @@ const Home = () => {
       }, 100);
     }
   }, [isAiResponding]);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-  const [aiResponseStartTime, setAiResponseStartTime] = useState<number | null>(
-    null
-  );
-  const [userHasScrolled, setUserHasScrolled] = useState(false);
-  const lastScrollTopRef = useRef<number>(0);
-
-  const { handleMenuClick, handleHistoryClick } = useSidebarController();
-  const { isCollapsed, toggle } = useSidebarToggle();
 
   // 세션에서 첫 번째 사용자 메시지를 17자까지 자른 제목 생성
   const getSessionTitle = useCallback(
@@ -175,7 +175,7 @@ const Home = () => {
     container.addEventListener('scroll', handleScroll, { passive: true });
 
     // 초기 상태 확인
-    checkScrollPositionImmediate();
+    // checkScrollPositionImmediate();
 
     return () => {
       container.removeEventListener('scroll', handleScroll);

@@ -213,18 +213,17 @@ export const app = {
   environment: currentEnvironment,
 };
 
-// 디버깅용 정보 출력
-// TODO: 필요없으면 삭제
-if (config.logging.enableConsole) {
-  console.group(`🌍 Environment: ${currentEnvironment}`);
-  console.log('Mode:', import.meta.env.MODE);
-  console.log('Config:', config);
-  console.log('Environment Variables:', {
-    PROD: import.meta.env.PROD,
-    DEV: import.meta.env.DEV,
-    MODE: import.meta.env.MODE,
-  });
-  console.groupEnd();
-}
+// 디버깅용 정보 출력이 필요하면 아래 블록을 활성화
+// if (config.logging.enableConsole) {
+//   console.group(`🌍 Environment: ${currentEnvironment}`);
+//   console.log('Mode:', import.meta.env.MODE);
+//   console.log('Config:', config);
+//   console.log('Environment Variables:', {
+//     PROD: import.meta.env.PROD,
+//     DEV: import.meta.env.DEV,
+//     MODE: import.meta.env.MODE,
+//   });
+//   console.groupEnd();
+// }
 
 export default config;

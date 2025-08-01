@@ -39,7 +39,6 @@ export function getBrowserSessionId(): string {
     const newSessionId = generateSessionId();
     localStorage.setItem(SESSION_ID_KEY, newSessionId);
 
-    console.log('New browser session ID created:', newSessionId);
     return newSessionId;
   } catch (error) {
     // 로컬스토리지 접근 실패시 (예: 프라이빗 모드) 메모리에서만 사용할 임시 ID 생성

@@ -44,6 +44,13 @@ export const useChatInput = () => {
   }, [showLinkInput, jiraTicketId, input]);
 
   // Effects
+  // 세션 변경 시 입력 필드들 초기화
+  useEffect(() => {
+    setInput('');
+    setJiraTicketId('');
+    setShowLinkInput(false);
+  }, [currentSession?.id]);
+
   useEffect(() => {
     if (hasJiraNumber && jiraCardRef.current) {
       const cardWidth = jiraCardRef.current.offsetWidth;
