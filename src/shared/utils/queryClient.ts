@@ -93,6 +93,7 @@ export const createDevQueryClient = () => {
       },
     }),
     mutationCache: new MutationCache({
+      // @ts-ignore
       onError: (error, variables, context, mutation) => {
         if (process.env.NODE_ENV === 'development') {
           console.group(
