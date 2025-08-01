@@ -1,5 +1,5 @@
 import { createStorageManager } from '@/shared/utils/localStorage';
-import type { ChatSession } from './types';
+import type { ChatMessage, ChatSession } from './types';
 
 // 채팅 세션 전용 스토리지
 const chatStorage = createStorageManager('chat-sessions');
@@ -27,26 +27,46 @@ export const saveSessions = (sessions: ChatSession[]) => {
 
 // 로컬 스토리지에서 세션을 복원하는 함수
 export const loadSessions = (): ChatSession[] => {
+  console.log('🔍 loadSessions 호출됨');
   try {
-    const sessions = chatStorage.get<ChatSession[]>(SESSIONS_STORAGE_KEY);
+    // 임시 수정: chatStorage.get() 대신 직접 localStorage 사용
+    const storageKey = `chat-sessions:${SESSIONS_STORAGE_KEY}`;
+    const rawData = localStorage.getItem(storageKey);
+    console.log('📦 localStorage에서 가져온 원본 데이터:', rawData);
+
+    let sessions = null;
+    if (rawData) {
+      sessions = JSON.parse(rawData);
+      console.log('🔄 파싱된 데이터:', sessions);
+    }
+
     if (sessions && Array.isArray(sessions)) {
+      console.log(`✅ ${sessions.length}개의 세션을 찾았습니다`);
       // Date 객체 복원 및 기본값 설정
-      return sessions.map((session) => ({
+      const restoredSessions = sessions.map((session) => ({
         ...session,
         agentMode: session.agentMode ?? null, // 기존 세션에 agentMode가 없으면 null로 설정
         isPinned: session.isPinned ?? false, // 기존 세션에 isPinned가 없으면 false로 설정
 
         createdAt: new Date(session.createdAt),
         updatedAt: new Date(session.updatedAt),
-        messages: session.messages.map((message) => ({
+        messages: session.messages.map((message: ChatMessage) => ({
           ...message,
           timestamp: new Date(message.timestamp),
         })),
       }));
+      console.log('🔄 복원된 세션들:', restoredSessions);
+      return restoredSessions;
+    } else {
+      console.log('⚠️ sessions가 없거나 배열이 아닙니다:', {
+        sessions,
+        isArray: Array.isArray(sessions),
+      });
     }
   } catch (error) {
-    console.error('Failed to load sessions from localStorage:', error);
+    console.error('❌ Failed to load sessions from localStorage:', error);
   }
+  console.log('📭 빈 배열 반환');
   return [];
 };
 

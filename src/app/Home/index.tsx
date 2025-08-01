@@ -1,4 +1,5 @@
-import { useMemo, useCallback, useRef, useEffect } from 'react';
+import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
+import { ArrowDown } from 'lucide-react';
 import { ICON_PATH } from '@/shared/constants';
 import { useSidebarToggle } from '@/shared/hooks/useSidebarToggle';
 import {
@@ -22,9 +23,41 @@ import { SideMenu } from './components/sideMenu';
 const Home = () => {
   const messages = useCurrentMessages();
   const sessions = useChatSessions();
-  const { togglePinSession, currentSession } = useChatStore();
+  const { togglePinSession, currentSession, isAiResponding } = useChatStore();
   const isSessionLoading = useIsSessionLoading();
+
+  // AI 응답 상태 디버깅 및 시작 시간 추적
+  useEffect(() => {
+    console.log('🔄 isAiResponding 상태 변경:', isAiResponding);
+
+    if (isAiResponding) {
+      // AI 응답 시작 시간 기록
+      const startTime = Date.now();
+      setAiResponseStartTime(startTime);
+      setUserHasScrolled(false); // 사용자 스크롤 상태 초기화
+      // 현재 스크롤 위치 기록
+      if (scrollContainerRef.current) {
+        lastScrollTopRef.current = scrollContainerRef.current.scrollTop;
+      }
+      console.log('🚀 AI 응답 시작 - 스크롤 추적 시작');
+    } else {
+      // AI 응답 완료 시 시작 시간 초기화
+      setAiResponseStartTime(null);
+      setUserHasScrolled(false);
+      console.log('✅ AI 응답 완료 - 최종 버튼 상태 체크');
+      // 응답 완료 후 즉시 한 번 체크
+      setTimeout(() => {
+        checkScrollPositionImmediate();
+      }, 100);
+    }
+  }, [isAiResponding]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [aiResponseStartTime, setAiResponseStartTime] = useState<number | null>(
+    null
+  );
+  const [userHasScrolled, setUserHasScrolled] = useState(false);
+  const lastScrollTopRef = useRef<number>(0);
 
   const { handleMenuClick, handleHistoryClick } = useSidebarController();
   const { isCollapsed, toggle } = useSidebarToggle();
@@ -66,11 +99,153 @@ const Home = () => {
     [togglePinSession]
   );
 
+  // 맨 아래로 스크롤하는 함수
+  const scrollToBottom = useCallback(() => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, []);
+
+  // 디바운싱을 위한 ref
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 스크롤 위치 체크 함수 (스마트 디바운싱 적용)
+  const checkScrollPosition = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const currentScrollTop = container.scrollTop;
+
+    // 사용자가 직접 스크롤했는지 감지
+    if (aiResponseStartTime && !userHasScrolled) {
+      const scrollDiff = Math.abs(currentScrollTop - lastScrollTopRef.current);
+      if (scrollDiff > 50) {
+        // 50px 이상 변화면 사용자 스크롤로 판단
+        setUserHasScrolled(true);
+        console.log('👆 사용자 스크롤 감지 - 즉시 버튼 상태 업데이트');
+      }
+    }
+
+    // 사용자가 스크롤했거나 AI 응답이 끝났으면 즉시 체크
+    const shouldCheckImmediately = userHasScrolled || !isAiResponding;
+
+    if (shouldCheckImmediately) {
+      console.log('🚀 즉시 스크롤 위치 체크');
+      checkScrollPositionImmediate();
+      return;
+    }
+
+    // AI 응답 중이고 사용자 스크롤이 없으면 디바운싱 적용
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    debounceTimeoutRef.current = setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      const shouldShowButton = !isAtBottom;
+
+      console.log('📏 디바운싱된 스크롤 상태:', {
+        scrollTop,
+        scrollHeight,
+        clientHeight,
+        isAtBottom,
+        shouldShowButton,
+        isAiResponding,
+        userHasScrolled,
+      });
+
+      setShowScrollToBottom(shouldShowButton);
+    }, 800); // 디바운싱 시간을 800ms로 증가
+  }, [isAiResponding, aiResponseStartTime, userHasScrolled]);
+
+  // 즉시 스크롤 위치 체크 함수 (사용자 스크롤용)
+  const checkScrollPositionImmediate = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 100;
+    const shouldShowButton = !isAtBottom;
+
+    console.log('⚡ 즉시 체크:', { scrollTop, isAtBottom, shouldShowButton });
+    setShowScrollToBottom(shouldShowButton);
+  }, []);
+
+  // 스크롤 위치 감지 (사용자 스크롤은 즉시 반응)
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      // 사용자가 직접 스크롤했다고 표시
+      if (isAiResponding) {
+        setUserHasScrolled(true);
+        console.log('🖱️ 사용자 직접 스크롤 감지');
+      }
+      checkScrollPositionImmediate(); // 즉시 체크
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+
+    // 초기 상태 확인
+    checkScrollPositionImmediate();
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+    };
+  }, [checkScrollPositionImmediate, isAiResponding]);
+
+  // 메시지 변경 시 스크롤 위치 체크 (디바운싱 적용)
+  useEffect(() => {
+    checkScrollPosition();
+  }, [messages.length, checkScrollPosition]);
+
+  // AI 응답 완료 후 정리 (필요시)
+  useEffect(() => {
+    if (!isAiResponding && aiResponseStartTime) {
+      console.log('🔄 AI 응답 완료 - 상태 정리');
+    }
+  }, [isAiResponding, aiResponseStartTime]);
+
+  // 타이핑 애니메이션 중 DOM 변화 감지 (디바운싱 적용)
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    console.log('👁️ MutationObserver 시작 - DOM 변화 감지');
+
+    const observer = new MutationObserver(() => {
+      console.log('🔄 DOM 변화 감지 - 디바운싱 스크롤 위치 체크');
+      checkScrollPosition(); // 디바운싱 적용된 체크
+    });
+
+    observer.observe(container, {
+      childList: true,
+      subtree: true,
+      characterData: true, // 텍스트 변화도 감지
+    });
+
+    return () => {
+      console.log('👁️ MutationObserver 중단');
+      observer.disconnect();
+      // 디바운싱 타이머도 클리어
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = null;
+      }
+    };
+  }, [checkScrollPosition]);
+
   // 세션 로딩 완료 시 스크롤을 맨 아래로 이동
   useEffect(() => {
     if (currentSession?.id && !isSessionLoading && scrollContainerRef.current) {
       // 더 안정적인 스크롤 설정을 위해 여러 단계로 처리
-      const scrollToBottom = () => {
+      const autoScrollToBottom = () => {
         if (scrollContainerRef.current) {
           const container = scrollContainerRef.current;
           container.scrollTop = container.scrollHeight;
@@ -89,11 +264,11 @@ const Home = () => {
 
       // 첫 번째 시도: 즉시
       requestAnimationFrame(() => {
-        scrollToBottom();
+        autoScrollToBottom();
 
         // 두 번째 시도: 약간의 지연 후 (DOM 업데이트 완료 보장)
         setTimeout(() => {
-          scrollToBottom();
+          autoScrollToBottom();
         }, 100);
       });
     }
@@ -158,7 +333,7 @@ const Home = () => {
             <ChatHeader />
             <div
               ref={scrollContainerRef}
-              className="overflow-y-auto custom-scrollbar"
+              className="overflow-y-auto custom-scrollbar relative"
               style={{
                 position: 'absolute',
                 top: '60px', // ChatHeader 높이 고려
@@ -172,6 +347,22 @@ const Home = () => {
             >
               <ChatMessages scrollContainerRef={scrollContainerRef} />
             </div>
+
+            {/* 맨 아래로 버튼 - main 컨테이너 기준 */}
+            {showScrollToBottom && (
+              <button
+                onClick={scrollToBottom}
+                className="absolute left-1/2 transform -translate-x-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full p-2 shadow-lg transition-all duration-200 hover:shadow-xl z-10"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  bottom: '276px', // ChatInput 영역(266px) + 10px 여백
+                }}
+                aria-label="맨 아래로 스크롤"
+              >
+                <ArrowDown size={18} className="text-white m-auto" />
+              </button>
+            )}
           </>
         )}
         <ChatInput />

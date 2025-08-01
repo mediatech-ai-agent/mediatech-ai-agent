@@ -432,5 +432,27 @@ if (typeof window !== 'undefined') {
       useChatStore.getState().checkStorageSize();
     (window as any).manualDeleteOldSessions = () =>
       useChatStore.getState().manualDeleteOldSessions();
+    (window as any).debugLocalStorage = () => {
+      console.log('🔍 localStorage 전체 내용:');
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key) {
+          const value = localStorage.getItem(key);
+          console.log(`  ${key}:`, value);
+        }
+      }
+
+      console.log('\n🔍 chat-sessions 네임스페이스:');
+      const chatKeys = Object.keys(localStorage).filter((key) =>
+        key.includes('chat')
+      );
+      chatKeys.forEach((key) => {
+        console.log(`  ${key}:`, localStorage.getItem(key));
+      });
+
+      console.log('\n🔍 현재 스토어 상태:');
+      console.log('  sessions:', useChatStore.getState().sessions);
+      console.log('  currentSession:', useChatStore.getState().currentSession);
+    };
   }
 }
