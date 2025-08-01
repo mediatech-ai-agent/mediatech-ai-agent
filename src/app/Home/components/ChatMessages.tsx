@@ -86,7 +86,6 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
       if (isAiResponding) {
         const newScrollTop = container.scrollTop;
         setUserScrollPosition(newScrollTop);
-        console.log('사용자 스크롤 감지 (AI 응답 중):', newScrollTop);
       }
 
       // 스크롤이 멈춘 후 사용자 스크롤 상태 해제
@@ -123,15 +122,6 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
 
     if (scrollDiff > 10) {
       // 10px 이상 차이날 때만
-      console.log('스크롤 위치 고정:', {
-        currentScrollTop,
-        savedPosition: userScrollPosition,
-        scrollDiff,
-        isAiResponding,
-        isUserScrolling,
-        hasNewMessageId: !!newMessageId,
-      });
-
       container.scrollTop = userScrollPosition;
     }
   }, [
@@ -148,13 +138,6 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
     if (!isSessionLoading && !sessionChangedRecently && messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
 
-      console.log('스크롤 체크:', {
-        lastMessage: lastMessage.sender,
-        messageId: lastMessage.id,
-        isAiResponding,
-        scrollContainer: !!scrollContainerRef.current,
-      });
-
       if (lastMessage.sender === 'user') {
         // 사용자 메시지를 화면 상단으로 스크롤
         const container = scrollContainerRef.current;
@@ -167,24 +150,11 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
               (el) => el.getAttribute('data-message-id') === lastMessage.id
             );
 
-            console.log('사용자 메시지 스크롤:', {
-              messageElements: messageElements.length,
-              found: !!lastMessageElement,
-              messageId: lastMessage.id,
-            });
-
             if (lastMessageElement) {
               const containerRect = container.getBoundingClientRect();
               const elementRect = lastMessageElement.getBoundingClientRect();
               const scrollTop =
                 container.scrollTop + elementRect.top - containerRect.top - 20;
-
-              console.log('스크롤 위치 계산:', {
-                currentScrollTop: container.scrollTop,
-                newScrollTop: scrollTop,
-                elementTop: elementRect.top,
-                containerTop: containerRect.top,
-              });
 
               container.scrollTo({ top: scrollTop, behavior: 'smooth' });
               setUserScrollPosition(null);
@@ -193,7 +163,6 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
         }
       } else if (lastMessage.sender === 'ai' && !isAiResponding) {
         // AI 응답 완료 시에만 맨 아래로 스크롤 (typewriter 효과 후)
-        console.log('AI 응답 완료 스크롤');
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         setUserScrollPosition(null);
       }
@@ -251,10 +220,6 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
             // 여전히 AI가 응답 중인지 확인
             const currentScrollTop = container.scrollTop;
             setUserScrollPosition(currentScrollTop);
-            console.log(
-              'AI 응답 시작 - 스크롤 위치 저장 (지연):',
-              currentScrollTop
-            );
           }
         }, 1000);
       }

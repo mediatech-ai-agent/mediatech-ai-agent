@@ -26,10 +26,8 @@ const Home = () => {
   const { togglePinSession, currentSession, isAiResponding } = useChatStore();
   const isSessionLoading = useIsSessionLoading();
 
-  // AI 응답 상태 디버깅 및 시작 시간 추적
+  // AI 응답 상태 및 시작 시간 추적
   useEffect(() => {
-    console.log('🔄 isAiResponding 상태 변경:', isAiResponding);
-
     if (isAiResponding) {
       // AI 응답 시작 시간 기록
       const startTime = Date.now();
@@ -39,12 +37,10 @@ const Home = () => {
       if (scrollContainerRef.current) {
         lastScrollTopRef.current = scrollContainerRef.current.scrollTop;
       }
-      console.log('🚀 AI 응답 시작 - 스크롤 추적 시작');
     } else {
       // AI 응답 완료 시 시작 시간 초기화
       setAiResponseStartTime(null);
       setUserHasScrolled(false);
-      console.log('✅ AI 응답 완료 - 최종 버튼 상태 체크');
       // 응답 완료 후 즉시 한 번 체크
       setTimeout(() => {
         checkScrollPositionImmediate();
@@ -126,7 +122,6 @@ const Home = () => {
       if (scrollDiff > 50) {
         // 50px 이상 변화면 사용자 스크롤로 판단
         setUserHasScrolled(true);
-        console.log('👆 사용자 스크롤 감지 - 즉시 버튼 상태 업데이트');
       }
     }
 
@@ -134,7 +129,6 @@ const Home = () => {
     const shouldCheckImmediately = userHasScrolled || !isAiResponding;
 
     if (shouldCheckImmediately) {
-      console.log('🚀 즉시 스크롤 위치 체크');
       checkScrollPositionImmediate();
       return;
     }
@@ -146,35 +140,24 @@ const Home = () => {
 
     debounceTimeoutRef.current = setTimeout(() => {
       const { scrollTop, scrollHeight, clientHeight } = container;
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 20; // 여유분 통일
       const shouldShowButton = !isAtBottom;
-
-      console.log('📏 디바운싱된 스크롤 상태:', {
-        scrollTop,
-        scrollHeight,
-        clientHeight,
-        isAtBottom,
-        shouldShowButton,
-        isAiResponding,
-        userHasScrolled,
-      });
 
       setShowScrollToBottom(shouldShowButton);
     }, 800); // 디바운싱 시간을 800ms로 증가
   }, [isAiResponding, aiResponseStartTime, userHasScrolled]);
 
   // 즉시 스크롤 위치 체크 함수 (사용자 스크롤용)
-  const checkScrollPositionImmediate = useCallback(() => {
+  const checkScrollPositionImmediate = () => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
     const { scrollTop, scrollHeight, clientHeight } = container;
-    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 100;
+    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 20; // 여유분을 20px로 줄임
     const shouldShowButton = !isAtBottom;
 
-    console.log('⚡ 즉시 체크:', { scrollTop, isAtBottom, shouldShowButton });
     setShowScrollToBottom(shouldShowButton);
-  }, []);
+  };
 
   // 스크롤 위치 감지 (사용자 스크롤은 즉시 반응)
   useEffect(() => {
@@ -185,7 +168,6 @@ const Home = () => {
       // 사용자가 직접 스크롤했다고 표시
       if (isAiResponding) {
         setUserHasScrolled(true);
-        console.log('🖱️ 사용자 직접 스크롤 감지');
       }
       checkScrollPositionImmediate(); // 즉시 체크
     };
@@ -208,7 +190,7 @@ const Home = () => {
   // AI 응답 완료 후 정리 (필요시)
   useEffect(() => {
     if (!isAiResponding && aiResponseStartTime) {
-      console.log('🔄 AI 응답 완료 - 상태 정리');
+      // 상태 정리 로직이 필요하면 여기에 추가
     }
   }, [isAiResponding, aiResponseStartTime]);
 
@@ -217,10 +199,7 @@ const Home = () => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    console.log('👁️ MutationObserver 시작 - DOM 변화 감지');
-
     const observer = new MutationObserver(() => {
-      console.log('🔄 DOM 변화 감지 - 디바운싱 스크롤 위치 체크');
       checkScrollPosition(); // 디바운싱 적용된 체크
     });
 
@@ -231,7 +210,6 @@ const Home = () => {
     });
 
     return () => {
-      console.log('👁️ MutationObserver 중단');
       observer.disconnect();
       // 디바운싱 타이머도 클리어
       if (debounceTimeoutRef.current) {
