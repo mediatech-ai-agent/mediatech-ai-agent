@@ -39,7 +39,7 @@ const loadSessions = (): ChatSession[] => {
         ...session,
         agentMode: session.agentMode ?? null, // 기존 세션에 agentMode가 없으면 null로 설정
         isPinned: session.isPinned ?? false, // 기존 세션에 isPinned가 없으면 false로 설정
-        originalIndex: session.originalIndex, // originalIndex는 있으면 유지, 없으면 undefined
+
         createdAt: new Date(session.createdAt),
         updatedAt: new Date(session.updatedAt),
         messages: session.messages.map((message) => ({
@@ -84,6 +84,30 @@ const getSessionsDataSize = (sessions: ChatSession[]): number => {
     console.error('Failed to calculate sessions data size:', error);
     return 0;
   }
+};
+
+// 세션 순서 정렬 함수 (고정된 세션들이 항상 맨 위)
+const sortSessionsWithPinnedFirst = (
+  sessions: ChatSession[]
+): ChatSession[] => {
+  const pinnedSessions = sessions.filter((session) => session.isPinned);
+  const unpinnedSessions = sessions.filter((session) => !session.isPinned);
+
+  return [...pinnedSessions, ...unpinnedSessions];
+};
+
+// 새 세션을 올바른 위치에 삽입하는 함수
+const insertNewSession = (
+  newSession: ChatSession,
+  existingSessions: ChatSession[]
+): ChatSession[] => {
+  const pinnedSessions = existingSessions.filter((session) => session.isPinned);
+  const unpinnedSessions = existingSessions.filter(
+    (session) => !session.isPinned
+  );
+
+  // 고정된 세션들 + 새 세션 + 기존 일반 세션들
+  return [...pinnedSessions, newSession, ...unpinnedSessions];
 };
 
 // 자동 대화 삭제 함수
@@ -178,7 +202,6 @@ export interface ChatSession {
   createdAt: Date;
   updatedAt: Date;
   isPinned?: boolean; // 고정 상태
-  originalIndex?: number; // 원래 순서 (고정 해제 시 복원용)
 }
 
 // 채팅 스토어 상태 인터페이스
@@ -275,7 +298,8 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     };
 
     set((state) => {
-      const updatedSessions = [newSession, ...state.sessions];
+      // 새 세션을 고정된 세션들 아래, 일반 세션들 위에 삽입
+      const updatedSessions = insertNewSession(newSession, state.sessions);
       // 로컬 스토리지에 저장 (디바운스 적용)
       saveSessions(updatedSessions);
 
@@ -395,8 +419,11 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       } as ChatSession;
 
       set((state) => {
-        // 새 세션을 추가하기 전에 용량 체크 및 자동 삭제
-        let sessionsToCheck = [permanentSession, ...state.sessions];
+        // 새 세션을 올바른 위치에 삽입하고 용량 체크 및 자동 삭제
+        let sessionsToCheck = insertNewSession(
+          permanentSession,
+          state.sessions
+        );
         const cleanedSessions = autoDeleteOldSessions(sessionsToCheck);
 
         saveSessions(cleanedSessions);
@@ -570,44 +597,63 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       let updatedSessions: ChatSession[];
 
       if (isPinning) {
-        // 고정하는 경우: 해당 세션을 맨 앞으로 이동
+        // 고정하는 경우: 고정된 세션들의 맨 위로 이동
         const sessionToPin = {
           ...targetSession,
           isPinned: true,
-          originalIndex: targetSessionIndex, // 원래 위치 저장
           updatedAt: new Date(),
         };
 
-        // 다른 세션들과 함께 새 배열 생성 (고정된 세션을 맨 앞에)
-        updatedSessions = [
-          sessionToPin,
-          ...state.sessions.filter((session) => session.id !== sessionId),
-        ];
-      } else {
-        // 고정 해제하는 경우: 원래 위치로 복원
-        const sessionToUnpin = {
-          ...targetSession,
-          isPinned: false,
-          originalIndex: undefined,
-          updatedAt: new Date(),
-        };
-
-        // 다른 세션들 먼저 배치
+        // 다른 세션들
         const otherSessions = state.sessions.filter(
           (session) => session.id !== sessionId
         );
+        const existingPinnedSessions = otherSessions.filter(
+          (session) => session.isPinned
+        );
+        const unpinnedSessions = otherSessions.filter(
+          (session) => !session.isPinned
+        );
 
-        // 원래 인덱스가 있으면 그 위치에 삽입, 없으면 끝에 추가
-        const insertIndex =
-          targetSession.originalIndex !== undefined
-            ? Math.min(targetSession.originalIndex, otherSessions.length)
-            : otherSessions.length;
-
+        // 새로 고정하는 세션을 고정된 세션들의 맨 위에 배치
         updatedSessions = [
-          ...otherSessions.slice(0, insertIndex),
-          sessionToUnpin,
-          ...otherSessions.slice(insertIndex),
+          sessionToPin,
+          ...existingPinnedSessions,
+          ...unpinnedSessions,
         ];
+
+        console.log(
+          `📌 세션 고정: "${targetSession.title}" (고정된 대화 맨 위로 이동)`
+        );
+      } else {
+        // 고정 해제하는 경우: 일반 세션들의 맨 위로 이동
+        const sessionToUnpin = {
+          ...targetSession,
+          isPinned: false,
+          updatedAt: new Date(),
+        };
+
+        // 다른 세션들
+        const otherSessions = state.sessions.filter(
+          (session) => session.id !== sessionId
+        );
+        const pinnedSessions = otherSessions.filter(
+          (session) => session.isPinned
+        );
+        const unpinnedSessions = otherSessions.filter(
+          (session) => !session.isPinned
+        );
+
+        // 고정 해제한 세션을 일반 세션들의 맨 위에 배치
+        updatedSessions = [
+          ...pinnedSessions,
+          sessionToUnpin,
+          ...unpinnedSessions,
+        ];
+
+        console.log(
+          `🔓 세션 고정 해제: "${targetSession.title}" (일반 대화 맨 위로 이동)`
+        );
       }
 
       // 로컬 스토리지에 저장
