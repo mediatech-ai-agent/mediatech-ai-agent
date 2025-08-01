@@ -162,8 +162,7 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
           }, 100);
         }
       } else if (lastMessage.sender === 'ai' && !isAiResponding) {
-        // AI 응답 완료 시에만 맨 아래로 스크롤 (typewriter 효과 후)
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        // AI 응답 완료 시 자동 스크롤 비활성화
         setUserScrollPosition(null);
       }
     }
@@ -242,16 +241,15 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
     wasAiRespondingRef.current = isAiResponding;
   }, [isAiResponding, messages]);
 
-  // 타이핑 중일 때 지속적으로 스크롤 유지 (사용자가 스크롤하지 않았을 때만)
-  useEffect(() => {
-    if (newMessageId && !isUserScrolling && userScrollPosition === null) {
-      const scrollInterval = setInterval(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 200); // 200ms마다 스크롤 체크
-
-      return () => clearInterval(scrollInterval);
-    }
-  }, [newMessageId, isUserScrolling, userScrollPosition]);
+  // 타이핑 중 자동 스크롤 비활성화
+  // useEffect(() => {
+  //   if (newMessageId && !isUserScrolling && userScrollPosition === null) {
+  //     const scrollInterval = setInterval(() => {
+  //       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  //     }, 200);
+  //     return () => clearInterval(scrollInterval);
+  //   }
+  // }, [newMessageId, isUserScrolling, userScrollPosition]);
 
   // 세션 로딩 중일 때는 로딩 화면 표시
   if (isSessionLoading) {
