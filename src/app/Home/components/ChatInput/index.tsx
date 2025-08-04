@@ -1,10 +1,13 @@
 import { useChatInput } from '../../../../shared/hooks/useChatInput';
+import { useCurrentAgentMode } from '@/stores/chat/selectors';
 import JiraCard from './JiraCard';
 import JiraInput from './JiraInput';
 import ChatTextarea from './ChatTextarea';
 import ActionButtons from './ActionButtons';
 
 const ChatInput = () => {
+  const agentMode = useCurrentAgentMode();
+  
   const {
     // Refs
     jiraCardRef,
@@ -118,6 +121,7 @@ const ChatInput = () => {
             ableSendMessage={ableSendMessage}
             isLinkBtnHovered={isLinkBtnHovered}
             isSendBtnHovered={isSendBtnHovered}
+            agentMode={agentMode}
             onLinkButtonClick={() => setShowLinkInput(true)}
             onSendButtonClick={() => {
               if (ableSendMessage) {

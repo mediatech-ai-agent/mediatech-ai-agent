@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowUp, Link } from 'lucide-react';
 import { Tooltip } from '@/shared/components';
+import type { AgentMode } from '@/stores/chat/types';
 
 interface ActionButtonsProps {
   showLinkInput: boolean;
@@ -8,6 +9,7 @@ interface ActionButtonsProps {
   ableSendMessage: boolean;
   isLinkBtnHovered: boolean;
   isSendBtnHovered: boolean;
+  agentMode: AgentMode;
   onLinkButtonClick: () => void;
   onSendButtonClick: () => void;
   onLinkButtonHover: (hover: boolean) => void;
@@ -20,11 +22,15 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   ableSendMessage,
   isLinkBtnHovered,
   isSendBtnHovered,
+  agentMode,
   onLinkButtonClick,
   onSendButtonClick,
   onLinkButtonHover,
   onSendButtonHover,
 }) => {
+  // agentMode가 'jira', 'cr', 'person' 중 하나인지 확인
+  const shouldShowButtons = agentMode === 'jira' || agentMode === 'cr' || agentMode === 'person';
+
   return (
     <div className="flex justify-between">
       <Tooltip
@@ -36,7 +42,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         <button
           type="submit"
           className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 relative overflow-hidden ${
-            !showLinkInput && !hasJiraNumber ? 'block' : 'hidden'
+            !showLinkInput && !hasJiraNumber && shouldShowButtons ? 'block' : 'hidden'
           }`}
           style={{
             background: 'rgba(255, 255, 255, 0.1)',
@@ -61,7 +67,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         <button
           type="submit"
           disabled={!ableSendMessage}
-          className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 relative overflow-hidden"
+          className="flex overflow-hidden relative justify-center items-center w-14 h-14 rounded-full transition-all duration-200"
           style={
             ableSendMessage
               ? {
