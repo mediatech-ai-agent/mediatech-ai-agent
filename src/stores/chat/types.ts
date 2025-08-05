@@ -30,6 +30,7 @@ export interface ChatMessage {
     [key: string]: any;
   };
   sourceMetaData?: SourceMetaData[]; // API 응답의 meta_data를 저장하는 속성
+  hideActions?: boolean; // ChatActions 컴포넌트 숨김 여부 (addAiMessageWithAgent로 추가된 초기 메시지)
 }
 
 // 채팅 세션 인터페이스
@@ -67,7 +68,9 @@ export interface ChatActions {
       jiraNumber?: string;
       files?: File[];
       [key: string]: any;
-    }
+    },
+    sourceMetaData?: SourceMetaData[],
+    hideActions?: boolean
   ) => void;
   addUserMessage: (
     content: string,
@@ -76,9 +79,16 @@ export interface ChatActions {
       jiraNumber?: string;
       files?: File[];
       [key: string]: any;
-    }
+    },
+    sourceMetaData?: SourceMetaData[],
+    hideActions?: boolean
   ) => void;
-  addAiMessage: (content: string, type?: MessageType) => void;
+  addAiMessage: (
+    content: string, 
+    type?: MessageType,
+    sourceMetaData?: SourceMetaData[],
+    hideActions?: boolean
+  ) => void;
   addAiMessageWithAgent: (
     content: string,
     agentMode: AgentMode,
@@ -87,7 +97,8 @@ export interface ChatActions {
       jiraNumber?: string;
       files?: File[];
       [key: string]: any;
-    }
+    },
+    sourceMetaData?: SourceMetaData[]
   ) => void;
   addUserTempMessage: (agentMode: AgentMode) => void;
   updateLastMessage: (content: string) => void;

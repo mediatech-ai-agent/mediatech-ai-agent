@@ -96,12 +96,13 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     sender: MessageSender,
     type: MessageType = 'text',
     metadata?: ChatMessage['metadata'],
-    sourceMetaData?: ChatMessage['sourceMetaData']
+    sourceMetaData?: ChatMessage['sourceMetaData'],
+    hideActions?: boolean
   ) => {
     const { currentSession } = get();
     if (!currentSession) {
       get().createSession();
-      return get().addMessage(content, sender, type, metadata, sourceMetaData);
+      return get().addMessage(content, sender, type, metadata, sourceMetaData, hideActions);
     }
 
     const newMessage: ChatMessage = {
@@ -112,6 +113,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       timestamp: new Date(),
       metadata,
       sourceMetaData,
+      hideActions,
     };
 
     const updatedSession: ChatSession = {
@@ -142,7 +144,8 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     content: string,
     type: MessageType = 'text',
     metadata?: ChatMessage['metadata'],
-    sourceMetaData?: ChatMessage['sourceMetaData']
+    sourceMetaData?: ChatMessage['sourceMetaData'],
+    hideActions?: boolean
   ) => {
     const { currentSession, sessions } = get();
 
@@ -177,15 +180,16 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       });
     }
 
-    get().addMessage(content, 'user', type, metadata, sourceMetaData);
+    get().addMessage(content, 'user', type, metadata, sourceMetaData, hideActions);
   },
 
-  addAiMessage: (
-    content: string,
+    addAiMessage: (
+    content: string, 
     type: MessageType = 'text',
-    sourceMetaData?: ChatMessage['sourceMetaData']
+    sourceMetaData?: ChatMessage['sourceMetaData'],
+    hideActions?: boolean
   ) => {
-    get().addMessage(content, 'ai', type, undefined, sourceMetaData);
+    get().addMessage(content, 'ai', type, undefined, sourceMetaData, hideActions);
   },
 
   createTemporarySession: () => {
@@ -218,7 +222,8 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     };
 
     set({ currentSession: newSession });
-    get().addMessage(content, 'ai', type, metadata, sourceMetaData);
+    // addAiMessageWithAgent로 추가되는 메시지는 ChatActions를 숨김 (초기 환영 메시지)
+    get().addMessage(content, 'ai', type, metadata, sourceMetaData, true);
   },
 
   addUserTempMessage: (agentMode: AgentMode) => {
@@ -423,12 +428,11 @@ if (typeof window !== 'undefined') {
 
   // 개발 환경에서 디버깅을 위해 window 객체에 노출
   if (process.env.NODE_ENV === 'development') {
-    (window as any).chatStore = useChatStore;
-    (window as any).checkStorageSize = () =>
-      useChatStore.getState().checkStorageSize();
-    (window as any).manualDeleteOldSessions = () =>
-      useChatStore.getState().manualDeleteOldSessions();
-    (window as any).debugLocalStorage = () => {
+    const globalWindow = window as unknown as Record<string, unknown>;
+    globalWindow.chatStore = useChatStore;
+    globalWindow.checkStorageSize = () => useChatStore.getState().checkStorageSize();
+    globalWindow.manualDeleteOldSessions = () => useChatStore.getState().manualDeleteOldSessions();
+    globalWindow.debugLocalStorage = () => {
       const allEntries = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);

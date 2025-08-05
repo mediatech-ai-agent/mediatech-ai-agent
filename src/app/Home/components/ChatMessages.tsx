@@ -304,12 +304,14 @@ const ChatMessages = ({ scrollContainerRef, onShowSources }: ChatMessagesProps) 
               />
             )}
 
-            {/* ChatActions - AI 메시지 하단에 추가 */}
-            <ChatActions
-              textContent={msg.content}
-              metaData={msg.sourceMetaData || []}
-              onShowSources={msg.sourceMetaData ? () => onShowSources?.(msg.sourceMetaData!) : undefined}
-            />
+            {/* ChatActions - AI 메시지 하단에 추가 (hideActions가 true인 경우 숨김) */}
+            {!msg.hideActions && (
+              <ChatActions
+                textContent={msg.content}
+                metaData={msg.sourceMetaData || []}
+                onShowSources={msg.sourceMetaData ? () => onShowSources?.(msg.sourceMetaData!) : undefined}
+              />
+            )}
           </div>
         ) : (
           <div
