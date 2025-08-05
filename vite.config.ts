@@ -12,4 +12,32 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    host: true, // 외부 접근 허용
+    proxy: {
+      '/api': {
+        target: 'https://1.255.86.189:8080',
+        changeOrigin: true,
+        secure: false, // SSL 인증서 검증 비활성화 (자체 서명 인증서 대응)
+
+        configure: (proxy, options) => {
+          proxy.on('error', (err, req, res) => {
+            console.log('🚨 Proxy error:', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log(
+              '🌐 Proxying request:',
+              req.method,
+              req.url,
+              '→',
+              options.target + proxyReq.path
+            );
+          });
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            console.log('✅ Proxy response:', proxyRes.statusCode, req.url);
+          });
+        },
+      },
+    },
+  },
 });

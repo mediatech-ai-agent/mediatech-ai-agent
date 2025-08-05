@@ -2,9 +2,21 @@ import { useMutation } from '@tanstack/react-query';
 import { HttpClient } from '../utils/HttpClient';
 import type { AgentMode } from '@/stores/chatStore';
 
+// API URL 결정 로직 (개발환경에서는 Vite 프록시 사용)
+const getApiBaseUrl = (): string => {
+  // 개발환경에서는 Vite 프록시 사용 (CORS 이슈 해결)
+  // DEV 또는 MODE가 development/local/staging일 때 프록시 사용
+  if (import.meta.env.MODE === 'localenv') {
+    return '/';
+  }
+
+  // 프로덕션에서는 직접 HTTPS 사용
+  return 'https://1.255.86.189:8080';
+};
+
 // 전용 API 클라이언트 인스턴스 생성
 const agentApiClient = new HttpClient({
-  baseURL: 'https://1.255.86.189:8080',
+  baseURL: getApiBaseUrl(),
   timeout: 30000, // 30초 타임아웃 (AI 응답 대기)
   retryOptions: {
     retries: 2,
@@ -15,6 +27,19 @@ const agentApiClient = new HttpClient({
     retryDelay: (retryCount: number) => retryCount * 2000,
   },
 });
+
+// 개발환경에서 디버깅을 위한 로그
+if (import.meta.env.MODE === 'localenv') {
+  const apiBaseUrl = getApiBaseUrl();
+  console.log('🌐 Agent API Base URL:', apiBaseUrl);
+  console.log('🔧 Environment Mode:', import.meta.env.MODE);
+  console.log('🔧 Environment DEV:', import.meta.env.DEV);
+  console.log('📝 Environment Variables:', {
+    VITE_AGENT_API_BASE_URL: import.meta.env.VITE_AGENT_API_BASE_URL,
+    DEV: import.meta.env.DEV,
+    MODE: import.meta.env.MODE,
+  });
+}
 
 // AgentMode를 실제 API agent_type으로 매핑하는 함수
 const mapAgentTypeForApi = (agentMode: AgentMode): string => {
