@@ -6,7 +6,7 @@
   "homepage": "https://mediatech-ai-agent.github.io/mediatech-ai-agent/",
   "scripts": {
     "dev": "vite",
-    "dev:local": "vite --mode local",
+    "dev:local": "vite --mode localenv",
     "dev:development": "vite --mode development",
     "dev:staging": "vite --mode staging",
     "build": "tsc -b && vite build",
