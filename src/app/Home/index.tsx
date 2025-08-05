@@ -22,6 +22,24 @@ import ChatMessages from './components/ChatMessages';
 import SourceContainer from './components/SourceContainer';
 import { SideMenu } from './components/sideMenu';
 
+/**
+ * source 값에 따라 적절한 아이콘 URL을 반환하는 함수
+ * @param source - 'jira', 'figma', 'confluence' 등의 소스 타입
+ * @returns 해당하는 아이콘 URL 또는 undefined
+ */
+const getSourceIcon = (source: string): string | undefined => {
+  switch (source.toLowerCase()) {
+    case 'jira':
+      return ICON_PATH.SOURCE_ICONS.JIRA;
+    case 'figma':
+      return ICON_PATH.SOURCE_ICONS.FIGMA;
+    case 'confluence':
+      return ICON_PATH.SOURCE_ICONS.CONFLUENCE;
+    default:
+      return undefined; // SourceCard에서 기본 아이콘 사용
+  }
+};
+
 const Home = () => {
   const messages = useCurrentMessages();
   const sessions = useChatSessions();
@@ -40,7 +58,7 @@ const Home = () => {
   const [sourceContainerData, setSourceContainerData] = useState<Array<{
     id: string;
     title: string;
-    description: string;
+    sourceUrl: string;
     iconUrl?: string;
   }>>([]);
 
@@ -55,8 +73,8 @@ const Home = () => {
     const sourceData = metaData.map((meta, index) => ({
       id: `source_${index}`,
       title: meta.title,
-      description: meta.url,
-      // iconUrl은 나중에 source 값 기반으로 추가 로직 필요
+      sourceUrl: meta.url,
+      iconUrl: getSourceIcon(meta.source),
     }));
 
     setSourceContainerData(sourceData);
@@ -121,8 +139,8 @@ const Home = () => {
           const sourceData = parsedData.meta_data.map((meta, index) => ({
             id: `source-${index}`,
             title: meta.title,
-            description: meta.url,
-            // iconUrl은 나중에 source 값 기반으로 추가 로직 필요
+            sourceUrl: meta.url,
+            iconUrl: getSourceIcon(meta.source),
           }));
 
           setSourceContainerData(sourceData);

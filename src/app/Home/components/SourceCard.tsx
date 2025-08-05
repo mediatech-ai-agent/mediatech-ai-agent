@@ -2,7 +2,7 @@ import React from 'react';
 
 interface SourceCardProps {
     title: string;
-    description: string;
+    sourceUrl: string;
     iconUrl?: string;
     className?: string;
     onClick?: () => void;
@@ -17,7 +17,7 @@ interface SourceCardProps {
  */
 const SourceCard: React.FC<SourceCardProps> = ({
     title,
-    description,
+    sourceUrl,
     iconUrl,
     className = '',
     onClick
@@ -123,7 +123,7 @@ const SourceCard: React.FC<SourceCardProps> = ({
                     {title}
                 </h3>
 
-                {/* 설명 텍스트 */}
+                {/* 설명 텍스트 (URL) */}
                 <p
                     className="text-gray-400"
                     style={{
@@ -139,7 +139,7 @@ const SourceCard: React.FC<SourceCardProps> = ({
                         overflow: 'hidden',
                     }}
                 >
-                    {description}
+                    {sourceUrl}
                 </p>
             </div>
         </div>

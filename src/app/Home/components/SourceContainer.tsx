@@ -6,7 +6,7 @@ import Tooltip from '@/shared/components/Tooltip';
 interface SourceItem {
     id: string;
     title: string;
-    description: string;
+    sourceUrl: string;
     iconUrl?: string;
 }
 
@@ -18,6 +18,17 @@ interface SourceContainerProps {
     onOutsideClick?: () => void;
     className?: string;
 }
+
+/**
+ * URL을 새 탭에서 여는 함수
+ * @param url - 열고자 하는 URL
+ */
+const openUrlInNewTab = (url: string) => {
+    // URL이 유효한지 체크하고 새 탭에서 열기
+    if (url) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+    }
+};
 
 /**
  * 출처 컨테이너 컴포넌트
@@ -121,10 +132,10 @@ const SourceContainer: React.FC<SourceContainerProps> = ({
                     <SourceCard
                         key={source.id}
                         title={source.title}
-                        description={source.description}
+                        sourceUrl={source.sourceUrl}
                         iconUrl={source.iconUrl}
                         className={index === sources.length - 1 ? 'mb-0' : ''}
-                        onClick={() => console.log('Source clicked:', source.title)}
+                        onClick={() => openUrlInNewTab(source.sourceUrl)}
                     />
                 ))}
             </div>

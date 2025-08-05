@@ -24,6 +24,11 @@ export const ICON_PATH = {
     POLICY: `${import.meta.env.BASE_URL}assets/chatHeader/header_policy.png`,
     PERSON: `${import.meta.env.BASE_URL}assets/chatHeader/header_person.png`,
   },
+  SOURCE_ICONS: {
+    JIRA: `${import.meta.env.BASE_URL}assets/source=jira.png`,
+    FIGMA: `${import.meta.env.BASE_URL}assets/source=figma.png`,
+    CONFLUENCE: `${import.meta.env.BASE_URL}assets/source=confluence.png`,
+  },
 } as const;
 
 export const CHAT_INPUT_PLACEHOLDER = {
