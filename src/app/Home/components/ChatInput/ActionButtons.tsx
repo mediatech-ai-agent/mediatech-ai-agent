@@ -41,9 +41,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       >
         <button
           type="submit"
-          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 relative overflow-hidden ${
-            !showLinkInput && !hasJiraNumber && shouldShowButtons ? 'block' : 'hidden'
-          }`}
+          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 relative overflow-hidden ${!showLinkInput && !hasJiraNumber && shouldShowButtons ? 'block' : 'hidden'
+            }`}
           style={{
             background: 'rgba(255, 255, 255, 0.1)',
           }}
@@ -71,12 +70,12 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           style={
             ableSendMessage
               ? {
-                  background: 'rgba(255, 255, 255, 0.1)',
-                }
+                background: 'rgba(255, 255, 255, 0.1)',
+              }
               : {
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  cursor: 'not-allowed',
-                }
+                background: 'rgba(255, 255, 255, 0.1)',
+                cursor: 'not-allowed',
+              }
           }
           onClick={onSendButtonClick}
           onMouseEnter={() => {
@@ -88,9 +87,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         >
           <ArrowUp
             size={24}
-            className={`${
-              ableSendMessage ? 'text-white' : 'text-white/40'
-            } transition-colors duration-200`}
+            className={`${ableSendMessage ? 'text-white' : 'text-white/40'
+              } transition-colors duration-200`}
           />
         </button>
       </Tooltip>

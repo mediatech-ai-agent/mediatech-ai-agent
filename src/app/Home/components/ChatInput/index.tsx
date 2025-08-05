@@ -7,7 +7,7 @@ import ActionButtons from './ActionButtons';
 
 const ChatInput = () => {
   const agentMode = useCurrentAgentMode();
-  
+
   const {
     // Refs
     jiraCardRef,
@@ -50,7 +50,7 @@ const ChatInput = () => {
 
   return (
     <div
-      className="fixed bottom-0 overflow-hidden chat-input-container"
+      className="overflow-hidden fixed bottom-0 chat-input-container"
       style={{
         left: '50%',
         transform: 'translateX(-50%)',
@@ -68,9 +68,9 @@ const ChatInput = () => {
       }}
     >
       {/* Input area */}
-      <div className="relative flex flex-col h-full">
+      <div className="flex relative flex-col h-full">
         {/* Textarea - 위쪽 영역 */}
-        <div className="flex-1 relative min-h-0">
+        <div className="relative flex-1 min-h-0">
           <div className="relative h-full">
             <JiraCard
               ref={jiraCardRef}
