@@ -21,10 +21,10 @@ export default defineConfig({
         secure: false, // SSL 인증서 검증 비활성화 (자체 서명 인증서 대응)
 
         configure: (proxy, options) => {
-          proxy.on('error', (err, req, res) => {
+          proxy.on('error', (err) => {
             console.log('🚨 Proxy error:', err);
           });
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
             console.log(
               '🌐 Proxying request:',
               req.method,
@@ -33,7 +33,7 @@ export default defineConfig({
               options.target + proxyReq.path
             );
           });
-          proxy.on('proxyRes', (proxyRes, req, res) => {
+          proxy.on('proxyRes', (proxyRes, req) => {
             console.log('✅ Proxy response:', proxyRes.statusCode, req.url);
           });
         },
