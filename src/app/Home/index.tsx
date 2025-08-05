@@ -14,10 +14,12 @@ import {
   useChatStore,
   useIsSessionLoading,
 } from '@/stores/chatStore.ts';
+import type { RequestAgentResponse } from '@/shared/hooks/useRequestAgent';
 import AgentCardGrid from './components/AgentCardGrid';
 import ChatHeader from './components/ChatHeader';
 import ChatInput from './components/ChatInput';
 import ChatMessages from './components/ChatMessages';
+import SourceContainer from './components/SourceContainer';
 import { SideMenu } from './components/sideMenu';
 
 const Home = () => {
@@ -32,6 +34,25 @@ const Home = () => {
   );
   const [userHasScrolled, setUserHasScrolled] = useState(false);
   const lastScrollTopRef = useRef<number>(0);
+
+  // SourceContainer 상태 관리
+  const [isSourceContainerVisible, setIsSourceContainerVisible] = useState(false);
+  const [sourceContainerData, setSourceContainerData] = useState<Array<{
+    id: string;
+    title: string;
+    description: string;
+    iconUrl?: string;
+  }>>([]);
+
+  // SourceContainer 닫기 핸들러
+  const handleCloseSourceContainer = useCallback(() => {
+    setIsSourceContainerVisible(false);
+  }, []);
+
+  // SourceContainer 외부 클릭 핸들러
+  const handleSourceContainerOutsideClick = useCallback(() => {
+    setIsSourceContainerVisible(false);
+  }, []);
 
   const { handleMenuClick, handleHistoryClick } = useSidebarController();
   const { isCollapsed, toggle } = useSidebarToggle();
@@ -57,6 +78,47 @@ const Home = () => {
       }, 100);
     }
   }, [isAiResponding]);
+
+  // 메시지에서 RequestAgentResponse 감지하여 SourceContainer 데이터 설정
+  useEffect(() => {
+    // 가장 최근 AI 메시지에서 RequestAgentResponse 찾기
+    const latestAiMessage = messages
+      .filter(message => message.sender === 'ai')
+      .reverse()
+      .find(message => {
+        try {
+          const parsedData = JSON.parse(message.content) as RequestAgentResponse;
+          return parsedData.meta_data && parsedData.meta_data.length > 0;
+        } catch {
+          return false;
+        }
+      });
+
+    if (latestAiMessage) {
+      try {
+        const parsedData = JSON.parse(latestAiMessage.content) as RequestAgentResponse;
+        if (parsedData.meta_data && parsedData.meta_data.length > 0) {
+          // MetaData를 SourceCard format으로 변환
+          const sourceData = parsedData.meta_data.map((meta, index) => ({
+            id: `source-${index}`,
+            title: meta.title,
+            description: meta.url,
+            // iconUrl은 나중에 source 값 기반으로 추가 로직 필요
+          }));
+
+          setSourceContainerData(sourceData);
+          // meta_data가 있으면 숨겨진 상태로 준비 (isVisible = false)
+          setIsSourceContainerVisible(false);
+        }
+      } catch (error) {
+        console.error('RequestAgentResponse 파싱 에러:', error);
+      }
+    } else {
+      // meta_data가 없으면 SourceContainer 데이터 초기화
+      setSourceContainerData([]);
+      setIsSourceContainerVisible(false);
+    }
+  }, [messages]);
 
   // 세션에서 첫 번째 사용자 메시지를 17자까지 자른 제목 생성
   const getSessionTitle = useCallback(
@@ -276,9 +338,8 @@ const Home = () => {
       </aside>
 
       <main
-        className={`fixed top-1/2 -translate-y-1/2 custom-scrollbar transition-all duration-300 flex flex-col ${
-          messages.length === 0 ? 'items-center justify-center' : ''
-        }`}
+        className={`fixed top-1/2 -translate-y-1/2 custom-scrollbar transition-all duration-300 flex flex-col ${messages.length === 0 ? 'items-center justify-center' : ''
+          }`}
         style={{
           left: `calc((${isCollapsed ? '292px' : '480px'} + 100vw) / 2)`, // 사이드바 접힘 상태에 따른 동적 left (100px + 92px + 100px) vs (100px + 280px + 100px)
           right: 'clamp(100px, 14vw, 200px)', // 반응형
@@ -290,7 +351,7 @@ const Home = () => {
       >
         {messages.length === 0 && (
           <div
-            className="absolute inset-0 flex items-center justify-center agent-cards-wrapper"
+            className="flex absolute inset-0 justify-center items-center agent-cards-wrapper"
             style={{
               paddingBottom: 'clamp(286px, 30vh, 350px)', // ChatInput 높이 + 여백
               paddingTop: '0',
@@ -311,7 +372,7 @@ const Home = () => {
             <ChatHeader />
             <div
               ref={scrollContainerRef}
-              className="overflow-y-auto custom-scrollbar relative"
+              className="overflow-y-auto relative custom-scrollbar"
               style={{
                 position: 'absolute',
                 top: '60px', // ChatHeader 높이 고려
@@ -330,7 +391,7 @@ const Home = () => {
             {showScrollToBottom && (
               <button
                 onClick={scrollToBottom}
-                className="absolute left-1/2 transform -translate-x-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full p-2 shadow-lg transition-all duration-200 hover:shadow-xl z-10"
+                className="absolute left-1/2 z-10 p-2 rounded-full shadow-lg backdrop-blur-md transition-all duration-200 transform -translate-x-1/2 bg-white/20 hover:bg-white/30 hover:shadow-xl"
                 style={{
                   width: '36px',
                   height: '36px',
@@ -338,13 +399,24 @@ const Home = () => {
                 }}
                 aria-label="맨 아래로 스크롤"
               >
-                <ArrowDown size={18} className="text-white m-auto" />
+                <ArrowDown size={18} className="m-auto text-white" />
               </button>
             )}
           </>
         )}
         <ChatInput />
       </main>
+
+      {/* SourceContainer - API 응답의 meta_data가 있을 때만 렌더링 */}
+      {sourceContainerData.length > 0 && (
+        <SourceContainer
+          title="출처"
+          sources={sourceContainerData}
+          isVisible={isSourceContainerVisible}
+          onClose={handleCloseSourceContainer}
+          onOutsideClick={handleSourceContainerOutsideClick}
+        />
+      )}
     </div>
   );
 };
