@@ -361,7 +361,7 @@ const Home = () => {
         }}
       >
         <SideMenu
-          title="B tv GPT"
+          title="B tv Agent"
           headerIcon={ICON_PATH.SIDE_MENU.MENU}
           isCollapsed={isCollapsed}
           onToggle={toggle}
