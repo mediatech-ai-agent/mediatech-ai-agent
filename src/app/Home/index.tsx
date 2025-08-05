@@ -44,6 +44,25 @@ const Home = () => {
     iconUrl?: string;
   }>>([]);
 
+
+  // SourceContainer 표시 핸들러
+  const handleShowSourceContainer = useCallback((metaData: Array<{
+    source: string;
+    title: string;
+    url: string;
+  }>) => {
+    // metaData를 sourceContainer 형식으로 변환
+    const sourceData = metaData.map((meta, index) => ({
+      id: `source_${index}`,
+      title: meta.title,
+      description: meta.url,
+      // iconUrl은 나중에 source 값 기반으로 추가 로직 필요
+    }));
+
+    setSourceContainerData(sourceData);
+    setIsSourceContainerVisible(true);
+  }, []);
+
   // SourceContainer 닫기 핸들러
   const handleCloseSourceContainer = useCallback(() => {
     setIsSourceContainerVisible(false);
@@ -384,7 +403,10 @@ const Home = () => {
                 paddingBottom: '20px',
               }}
             >
-              <ChatMessages scrollContainerRef={scrollContainerRef} />
+              <ChatMessages
+                scrollContainerRef={scrollContainerRef}
+                onShowSources={handleShowSourceContainer}
+              />
             </div>
 
             {/* 맨 아래로 버튼 - main 컨테이너 기준 */}

@@ -9,6 +9,13 @@ export type MessageSender = 'user' | 'ai';
 // 에이전트 모드 타입 정의
 export type AgentMode = AgentType | null;
 
+// 출처 정보 타입 (useRequestAgent에서 가져온 MetaData와 동일)
+export interface SourceMetaData {
+  source: string;
+  title: string;
+  url: string;
+}
+
 // 개별 메시지 인터페이스
 export interface ChatMessage {
   id: string;
@@ -22,6 +29,7 @@ export interface ChatMessage {
     files?: File[];
     [key: string]: any;
   };
+  sourceMetaData?: SourceMetaData[]; // API 응답의 meta_data를 저장하는 속성
 }
 
 // 채팅 세션 인터페이스

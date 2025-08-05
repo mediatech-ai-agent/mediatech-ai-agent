@@ -162,7 +162,7 @@ export const useChatInput = () => {
         session_id: latestSession?.id ?? sessionId ?? '',
       });
 
-      addAiMessage(response.result);
+      addAiMessage(response.result, 'text', response.meta_data);
     } catch (error) {
       console.error('API 요청 실패:', error);
 
@@ -181,7 +181,7 @@ export const useChatInput = () => {
 
 > 불편을 드려 죄송합니다. 🙏
       `
-          : `<div class="markdown-content text-white leading-relaxed inline-block"><h2>죄송합니다. 일시적인 오류가 발생했습니다.</h2>
+          : `<div class="inline-block leading-relaxed text-white markdown-content"><h2>죄송합니다. 일시적인 오류가 발생했습니다.</h2>
 <p style="white-space: pre-wrap;">현재 AI 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.</p>
 <p style="white-space: pre-wrap;"><strong>오류 유형</strong>: 네트워크 연결 오류
 <strong>해결 방법</strong>:</p>

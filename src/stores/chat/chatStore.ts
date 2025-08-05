@@ -95,12 +95,13 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     content: string,
     sender: MessageSender,
     type: MessageType = 'text',
-    metadata?: ChatMessage['metadata']
+    metadata?: ChatMessage['metadata'],
+    sourceMetaData?: ChatMessage['sourceMetaData']
   ) => {
     const { currentSession } = get();
     if (!currentSession) {
       get().createSession();
-      return get().addMessage(content, sender, type, metadata);
+      return get().addMessage(content, sender, type, metadata, sourceMetaData);
     }
 
     const newMessage: ChatMessage = {
@@ -110,6 +111,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       type,
       timestamp: new Date(),
       metadata,
+      sourceMetaData,
     };
 
     const updatedSession: ChatSession = {
@@ -139,7 +141,8 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   addUserMessage: (
     content: string,
     type: MessageType = 'text',
-    metadata?: ChatMessage['metadata']
+    metadata?: ChatMessage['metadata'],
+    sourceMetaData?: ChatMessage['sourceMetaData']
   ) => {
     const { currentSession, sessions } = get();
 
@@ -160,7 +163,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       } as ChatSession;
 
       set((state) => {
-        let sessionsToCheck = insertNewSession(
+        const sessionsToCheck = insertNewSession(
           permanentSession,
           state.sessions
         );
@@ -174,11 +177,15 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       });
     }
 
-    get().addMessage(content, 'user', type, metadata);
+    get().addMessage(content, 'user', type, metadata, sourceMetaData);
   },
 
-  addAiMessage: (content: string, type: MessageType = 'text') => {
-    get().addMessage(content, 'ai', type);
+  addAiMessage: (
+    content: string,
+    type: MessageType = 'text',
+    sourceMetaData?: ChatMessage['sourceMetaData']
+  ) => {
+    get().addMessage(content, 'ai', type, undefined, sourceMetaData);
   },
 
   createTemporarySession: () => {
@@ -198,7 +205,8 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     content: string,
     agentMode: AgentMode,
     type: MessageType = 'text',
-    metadata?: ChatMessage['metadata']
+    metadata?: ChatMessage['metadata'],
+    sourceMetaData?: ChatMessage['sourceMetaData']
   ) => {
     const newSession: ChatSession = {
       id: `temp_session_${Date.now()}`,
@@ -210,7 +218,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     };
 
     set({ currentSession: newSession });
-    get().addMessage(content, 'ai', type, metadata);
+    get().addMessage(content, 'ai', type, metadata, sourceMetaData);
   },
 
   addUserTempMessage: (agentMode: AgentMode) => {

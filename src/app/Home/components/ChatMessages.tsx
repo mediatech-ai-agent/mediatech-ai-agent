@@ -7,9 +7,15 @@ import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import MarkdownRenderer from '../../../shared/components/MarkdownRenderer';
 import { useTypewriter } from '../../../shared/hooks/useTypewriter';
+import ChatActions from './ChatActions';
 
 interface ChatMessagesProps {
   scrollContainerRef: RefObject<HTMLDivElement | null>;
+  onShowSources?: (metaData: Array<{
+    source: string;
+    title: string;
+    url: string;
+  }>) => void;
 }
 
 // HTML 렌더링 컴포넌트 (타이핑 효과 포함)
@@ -58,7 +64,7 @@ const TypewriterMarkdownRenderer = ({
   );
 };
 
-const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
+const ChatMessages = ({ scrollContainerRef, onShowSources }: ChatMessagesProps) => {
   const messages = useCurrentMessages();
   const { currentSession, isAiResponding } = useChatStore();
   const isSessionLoading = useIsSessionLoading();
@@ -254,10 +260,10 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
   // 세션 로딩 중일 때는 로딩 화면 표시
   if (isSessionLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex justify-center items-center h-full">
         <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/50"></div>
-          <div className="text-white/70 text-sm">대화를 불러오는 중...</div>
+          <div className="w-8 h-8 rounded-full border-b-2 animate-spin border-white/50"></div>
+          <div className="text-sm text-white/70">대화를 불러오는 중...</div>
         </div>
       </div>
     );
@@ -297,6 +303,13 @@ const ChatMessages = ({ scrollContainerRef }: ChatMessagesProps) => {
                 }
               />
             )}
+
+            {/* ChatActions - AI 메시지 하단에 추가 */}
+            <ChatActions
+              textContent={msg.content}
+              metaData={msg.sourceMetaData || []}
+              onShowSources={msg.sourceMetaData ? () => onShowSources?.(msg.sourceMetaData!) : undefined}
+            />
           </div>
         ) : (
           <div
