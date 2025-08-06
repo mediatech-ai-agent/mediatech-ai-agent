@@ -4,14 +4,14 @@ FROM node:22-alpine
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# Corepack 활성화 및 Yarn 설정
+# Corepack 활성화 (Yarn 4.9.1 사용)
 RUN corepack enable
 
-# package.json과 yarn.lock 복사
-COPY package.json yarn.lock ./
+# package.json, .yarnrc.yml, yarn.lock 복사
+COPY package.json .yarnrc.yml yarn.lock ./
 
-# 의존성 설치
-RUN yarn install --frozen-lockfile
+# 의존성 설치 (yarn.lock 자동 생성)
+RUN yarn install
 
 # 소스 코드 복사
 COPY . .
