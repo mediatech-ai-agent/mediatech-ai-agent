@@ -26,7 +26,7 @@ RUN npm install -g pm2 serve
 EXPOSE 3001
 
 # PM2 설정 파일 복사
-COPY ecosystem.config.js .
+COPY ecosystem.config.cjs .
 
 # PM2로 애플리케이션 시작
-CMD ["pm2-runtime", "start", "ecosystem.config.js"]
+CMD ["pm2-runtime", "start", "ecosystem.config.cjs"]
