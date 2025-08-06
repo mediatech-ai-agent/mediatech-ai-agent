@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/mediatech-ai-agent/',
+  base: '/', // Docker 배포용 루트 경로
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
