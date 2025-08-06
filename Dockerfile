@@ -7,20 +7,20 @@ WORKDIR /app
 # Corepack 활성화 (Yarn 4.9.1 사용)
 RUN corepack enable
 
-# package.json, .yarnrc.yml, yarn.lock 복사
-COPY package.json .yarnrc.yml yarn.lock ./
+# package.json과 package-lock.json 복사
+COPY package.json package-lock.json ./
 
-# 의존성 설치 (yarn.lock 자동 생성)
-RUN yarn install
+# 의존성 설치
+RUN npm ci
 
 # 소스 코드 복사
 COPY . .
 
 # 프로덕션 빌드
-RUN yarn build:production
+RUN npm run build:production
 
-# 빌드 결과 확인 (빌드 실패 시 Docker 빌드도 실패)
-RUN ls -la /app/dist && echo "Build successful: dist folder found" || (echo "Build failed: dist folder not found" && exit 1)
+# 빌드 결과 확인
+RUN ls -la /app/dist
 
 # PM2와 serve를 글로벌 설치
 RUN npm install -g pm2 serve
