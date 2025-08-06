@@ -1,5 +1,5 @@
-# Node.js 22 LTS Alpine 이미지 사용
-FROM node:22-alpine
+# Node.js 22 LTS 이미지 사용 (Alpine 대신 일반 이미지로 네이티브 모듈 호환성 확보)
+FROM node:22
 
 # 작업 디렉토리 설정
 WORKDIR /app
@@ -10,8 +10,12 @@ RUN corepack enable
 # package.json, .yarnrc.yml, yarn.lock 복사
 COPY package.json .yarnrc.yml yarn.lock ./
 
-# 의존성 설치 (yarn.lock 자동 생성)
-RUN yarn install
+# Yarn 캐시 권한 문제 방지를 위한 환경 변수 설정
+ENV YARN_CACHE_FOLDER=/tmp/.yarn-cache
+ENV YARN_ENABLE_GLOBAL_CACHE=false
+
+# 의존성 설치
+RUN yarn install --frozen-lockfile
 
 # 소스 코드 복사
 COPY . .
