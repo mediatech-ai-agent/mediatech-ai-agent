@@ -42,7 +42,7 @@ const ChatHeader: React.FC = () => {
 
       default:
         return {
-          icon: '',
+          icon: ICON_PATH.CHAT_HEADER.CHAT,
           title: '새로운 대화하기',
         };
     }
@@ -52,7 +52,7 @@ const ChatHeader: React.FC = () => {
 
   return (
     <div
-      className="absolute top-0 left-0 right-0 flex items-center px-6 z-10 transition-all duration-300"
+      className="flex absolute top-0 right-0 left-0 z-10 items-center px-6 transition-all duration-300"
       style={{
         height: hasUserMessage ? '44px' : '69px',
         width: '100%',

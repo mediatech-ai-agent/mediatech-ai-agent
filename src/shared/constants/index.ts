@@ -19,6 +19,7 @@ export const ICON_PATH = {
     SELECTED: `${import.meta.env.BASE_URL}assets/sideMenu/ic_save_sel.png`,
   },
   CHAT_HEADER: {
+    CHAT: `${import.meta.env.BASE_URL}assets/chatHeader/header_chat.png`,
     JIRA: `${import.meta.env.BASE_URL}assets/chatHeader/header_jira.png`,
     CR: `${import.meta.env.BASE_URL}assets/chatHeader/header_cr.png`,
     POLICY: `${import.meta.env.BASE_URL}assets/chatHeader/header_policy.png`,
