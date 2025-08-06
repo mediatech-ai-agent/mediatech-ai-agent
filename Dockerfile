@@ -25,6 +25,9 @@ RUN npm install -g pm2 serve
 # 포트 노출
 EXPOSE 3001
 
+# 빌드 결과 확인을 위한 디버그
+RUN ls -la /app/dist || echo "dist folder not found"
+
 # PM2 설정 파일 복사
 COPY ecosystem.config.cjs .
 
