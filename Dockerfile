@@ -1,17 +1,14 @@
-# Node.js 22 LTS Alpine 이미지 사용
-FROM node:22-alpine
+# Node.js 22 LTS 이미지 사용
+FROM node:22
 
 # 작업 디렉토리 설정
 WORKDIR /app
-
-# Corepack 활성화 (Yarn 4.9.1 사용)
-RUN corepack enable
 
 # package.json과 package-lock.json 복사
 COPY package.json package-lock.json ./
 
 # 의존성 설치
-RUN npm ci
+RUN npm ci --omit=dev
 
 # 소스 코드 복사
 COPY . .
