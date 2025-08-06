@@ -4,8 +4,8 @@ FROM node:22-alpine
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# 패키지 관리자 설정
-RUN apk add --no-cache yarn
+# Corepack 활성화 및 Yarn 설정
+RUN corepack enable
 
 # package.json과 yarn.lock 복사
 COPY package.json yarn.lock ./
@@ -20,7 +20,7 @@ COPY . .
 RUN yarn build:production
 
 # PM2와 serve를 글로벌 설치
-RUN yarn global add pm2 serve
+RUN npm install -g pm2 serve
 
 # 포트 노출
 EXPOSE 3001
