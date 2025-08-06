@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useChatStore } from '@/stores/chatStore.ts';
 import { useRequestAgent } from '@/shared/hooks/useRequestAgent';
-import { CHAT_INPUT_PLACEHOLDER } from '@/shared/constants';
+import { CHAT_INPUT_PLACEHOLDER, INPUT_VALIDATION } from '@/shared/constants';
+import type { AgentType } from '@/shared/utils/common';
 
 export const useChatInput = () => {
   const {
@@ -29,6 +30,10 @@ export const useChatInput = () => {
   const [showJiraCard, setShowJiraCard] = useState(true);
   const [showLinkInput, setShowLinkInput] = useState(false);
 
+  // Validation state
+  const [hasInputError, setHasInputError] = useState(false);
+  const [showInputError, setShowInputError] = useState(false);
+
   // Computed values
   const isJiraMode = currentSession?.agentMode === 'jira';
   const isCrMode = currentSession?.agentMode === 'cr';
@@ -37,11 +42,46 @@ export const useChatInput = () => {
 
   const ableSendMessage = useMemo(() => {
     if (showLinkInput) {
-      return jiraTicketId.trim() !== '';
+      return jiraTicketId.trim() !== '' && !hasInputError;
     } else {
       return input.trim() !== '';
     }
-  }, [showLinkInput, jiraTicketId, input]);
+  }, [showLinkInput, jiraTicketId, input, hasInputError]);
+
+  // Validation logic functions
+  const getValidationPattern = useCallback((type: AgentType) => {
+    switch (type) {
+      case 'jira':
+        return INPUT_VALIDATION.PATTERNS.JIRA;
+      case 'cr':
+        return INPUT_VALIDATION.PATTERNS.CR;
+      case 'person':
+        return INPUT_VALIDATION.PATTERNS.PERSON;
+      default:
+        return null;
+    }
+  }, []);
+
+  const validateJiraInput = useCallback(
+    (inputValue: string) => {
+      if (!inputValue.trim()) {
+        setHasInputError(false);
+        setShowInputError(false);
+        return;
+      }
+
+      const agentType = currentSession?.agentMode;
+      if (!agentType) return;
+
+      const pattern = getValidationPattern(agentType);
+      if (pattern) {
+        const isValid = pattern.test(inputValue.trim());
+        setHasInputError(!isValid);
+        setShowInputError(!isValid);
+      }
+    },
+    [currentSession?.agentMode, getValidationPattern]
+  );
 
   // Effects
   // 세션 변경 시 입력 필드들 초기화
@@ -49,7 +89,15 @@ export const useChatInput = () => {
     setInput('');
     setJiraTicketId('');
     setShowLinkInput(false);
+    // 검증 상태도 초기화
+    setHasInputError(false);
+    setShowInputError(false);
   }, [currentSession?.id]);
+
+  // jiraTicketId 변경 시 검증 실행
+  useEffect(() => {
+    validateJiraInput(jiraTicketId);
+  }, [jiraTicketId, validateJiraInput]);
 
   useEffect(() => {
     if (hasJiraNumber && jiraCardRef.current) {
@@ -259,7 +307,11 @@ export const useChatInput = () => {
   };
 
   const getJiraInputPlaceholder = () => {
-    return isJiraMode ? 'BPM-00000' : isCrMode ? 'BTVB-00000' : 'BPM-00000';
+    return isJiraMode
+      ? 'BPM-00000 또는 BTVB-00000'
+      : isCrMode
+        ? 'BTVB-00000'
+        : 'BPM-00000 또는 BTVB-00000';
   };
 
   return {
@@ -277,6 +329,10 @@ export const useChatInput = () => {
     isLinkBtnHovered,
     showJiraCard,
     showLinkInput,
+
+    // Validation state
+    hasInputError,
+    showInputError,
 
     // Computed
     isJiraMode,

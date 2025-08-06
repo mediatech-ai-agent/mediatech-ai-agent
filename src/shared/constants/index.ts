@@ -39,3 +39,17 @@ export const CHAT_INPUT_PLACEHOLDER = {
   PERSON: '"홈 전시 담당하는 개발자와 UI담당자를 알려줘"라고 요청해 보세요',
   DEFAULT: 'B tv 개발에 필요한 무엇이든 물어보세요',
 };
+
+export const INPUT_VALIDATION = {
+  PATTERNS: {
+    JIRA: /^(BPM-\d+|BTVB-\d+)$/,
+    CR: /^BTVB-\d+$/,
+    PERSON: /^(BPM-\d+|BTVB-\d+)$/,
+  },
+  ERROR_MESSAGES: {
+    JIRA: 'BPM-숫자 또는 BTVB-숫자 형식으로 입력해 주세요 (예: BPM-123, BTVB-456)',
+    CR: 'BTVB-숫자 형식으로 입력해 주세요 (예: BTVB-123)',
+    PERSON:
+      'BPM-숫자 또는 BTVB-숫자 형식으로 입력해 주세요 (예: BPM-123, BTVB-456)',
+  },
+} as const;

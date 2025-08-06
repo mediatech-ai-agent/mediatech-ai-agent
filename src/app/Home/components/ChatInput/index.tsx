@@ -23,6 +23,10 @@ const ChatInput = () => {
     showJiraCard,
     showLinkInput,
 
+    // Validation state
+    hasInputError,
+    showInputError,
+
     // Computed
     hasJiraNumber,
     ableSendMessage,
@@ -111,6 +115,9 @@ const ChatInput = () => {
             show={showLinkInput}
             value={jiraTicketId}
             placeholder={getJiraInputPlaceholder()}
+            agentType={agentMode || 'jira'}
+            hasError={hasInputError}
+            showError={showInputError}
             onChange={setJiraTicketId}
             onKeyDown={handleInputKeyDown}
           />
