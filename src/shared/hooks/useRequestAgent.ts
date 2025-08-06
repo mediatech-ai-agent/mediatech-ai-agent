@@ -2,16 +2,11 @@ import { useMutation } from '@tanstack/react-query';
 import { HttpClient } from '../utils/HttpClient';
 import type { AgentMode } from '@/stores/chatStore';
 
-// API URL 결정 로직 (개발환경에서는 Vite 프록시 사용)
+// API URL 결정 로직 (모든 환경에서 프록시 사용)
 const getApiBaseUrl = (): string => {
-  // 개발환경에서는 Vite 프록시 사용 (CORS 이슈 해결)
-  // DEV 또는 MODE가 development/local/staging일 때 프록시 사용
-  if (import.meta.env.MODE === 'localenv') {
-    return '/';
-  }
-
-  // 프로덕션에서는 직접 HTTPS 사용
-  return 'https://1.255.86.189:8080';
+  // 개발환경과 프로덕션 모두 프록시 사용 (CORS 이슈 해결)
+  // 개발: Vite 프록시, 프로덕션: Nginx 프록시
+  return '/';
 };
 
 // 전용 API 클라이언트 인스턴스 생성
