@@ -20,9 +20,49 @@ const CopyButton: React.FC<CopyButtonProps> = ({
 }) => {
     const [isCopied, setIsCopied] = useState(false);
 
+    // HTTP 환경에서도 동작하는 클립보드 복사 함수
+    const copyToClipboard = useCallback(async (text: string): Promise<void> => {
+        // 최신 브라우저의 Clipboard API 시도 (HTTPS 또는 localhost에서만 동작)
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return;
+            } catch (error) {
+                console.warn('Clipboard API 실패, fallback 사용:', error);
+            }
+        }
+
+        // Fallback: execCommand 사용 (HTTP에서도 동작)
+        try {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+
+            if (!successful) {
+                throw new Error('execCommand 복사 실패');
+            }
+        } catch (error) {
+            // 최후의 수단: 사용자에게 수동 복사 안내
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isMac = userAgent.indexOf('mac') !== -1;
+            const shortcut = isMac ? 'Cmd+C' : 'Ctrl+C';
+
+            prompt(`자동 복사가 지원되지 않습니다. 아래 텍스트를 선택하고 ${shortcut}를 눌러 복사해주세요:`, text);
+            throw error;
+        }
+    }, []);
+
     const handleCopy = useCallback(async () => {
         try {
-            await navigator.clipboard.writeText(textContent);
+            await copyToClipboard(textContent);
             setIsCopied(true);
 
             // 2초 후 원래 상태로 복원
@@ -31,8 +71,9 @@ const CopyButton: React.FC<CopyButtonProps> = ({
             }, 2000);
         } catch (error) {
             console.error('클립보드 복사 실패:', error);
+            // 에러가 발생해도 UI는 정상적으로 표시 (사용자가 수동으로 복사했을 수 있음)
         }
-    }, [textContent]);
+    }, [textContent, copyToClipboard]);
 
     return (
         <button
