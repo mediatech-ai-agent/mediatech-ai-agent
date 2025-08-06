@@ -1,5 +1,5 @@
-# Node.js 22 LTS 이미지 사용 (Alpine 대신 일반 이미지로 네이티브 모듈 호환성 확보)
-FROM node:22
+# Multi-stage build: Node.js로 빌드 후 Nginx로 서빙
+FROM node:22 AS builder
 
 # 작업 디렉토리 설정
 WORKDIR /app
@@ -23,17 +23,20 @@ COPY . .
 # 프로덕션 빌드
 RUN yarn build:production
 
-# 빌드 결과 확인 (빌드 실패 시 Docker 빌드도 실패)
+# 빌드 결과 확인
 RUN ls -la /app/dist && echo "Build successful: dist folder found" || (echo "Build failed: dist folder not found" && exit 1)
 
-# PM2와 serve를 글로벌 설치
-RUN npm install -g pm2 serve
+# Production stage: Nginx로 정적 파일 서빙
+FROM nginx:alpine
+
+# 빌드된 파일을 Nginx 디렉토리로 복사
+COPY --from=builder /app/dist /app/dist
+
+# Nginx 설정 파일 복사
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # 포트 노출
 EXPOSE 3001
 
-# PM2 설정 파일 복사
-COPY ecosystem.config.cjs .
-
-# PM2로 애플리케이션 시작
-CMD ["pm2-runtime", "start", "ecosystem.config.cjs"]
+# Nginx 실행
+CMD ["nginx", "-g", "daemon off;"]
