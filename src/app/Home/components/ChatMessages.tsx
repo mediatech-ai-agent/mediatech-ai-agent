@@ -8,6 +8,7 @@ import type { RefObject } from 'react';
 import MarkdownRenderer from '../../../shared/components/MarkdownRenderer';
 import { useTypewriter } from '../../../shared/hooks/useTypewriter';
 import ChatActions from './ChatActions';
+import TypingIndicator from './TypingIndicator';
 
 interface ChatMessagesProps {
   scrollContainerRef: RefObject<HTMLDivElement | null>;
@@ -344,6 +345,10 @@ const ChatMessages = ({ scrollContainerRef, onShowSources }: ChatMessagesProps) 
           </div>
         )
       )}
+
+      {/* AI 응답 중일 때 타이핑 인디케이터 표시 */}
+      {isAiResponding && <TypingIndicator />}
+
       <div ref={chatEndRef} />
     </div>
   );

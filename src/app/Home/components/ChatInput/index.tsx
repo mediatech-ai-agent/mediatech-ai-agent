@@ -30,6 +30,7 @@ const ChatInput = () => {
     // Computed
     hasJiraNumber,
     ableSendMessage,
+    isAiResponding,
 
     // Handlers
     handleChange,
@@ -97,6 +98,7 @@ const ChatInput = () => {
               placeholder={getPlaceholder()}
               jiraCardWidth={jiraCardWidth}
               hasJiraNumber={!!hasJiraNumber}
+              disabled={isAiResponding}
               onChange={handleChange}
               onKeyDown={handleTextAreaKeyDown}
               onCompositionStart={handleCompositionStart}
@@ -118,6 +120,7 @@ const ChatInput = () => {
             agentType={agentMode || 'jira'}
             hasError={hasInputError}
             showError={showInputError}
+            disabled={isAiResponding}
             onChange={setJiraTicketId}
             onKeyDown={handleInputKeyDown}
           />

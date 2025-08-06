@@ -9,12 +9,13 @@ interface JiraInputProps {
   agentType: AgentType;
   hasError: boolean;
   showError: boolean;
+  disabled?: boolean;
   onChange: (value: string) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 const JiraInput = forwardRef<HTMLInputElement, JiraInputProps>(
-  ({ show, value, placeholder, agentType, hasError, showError, onChange, onKeyDown }, ref) => {
+  ({ show, value, placeholder, agentType, hasError, showError, disabled = false, onChange, onKeyDown }, ref) => {
     // AgentType에 따른 에러 메시지 가져오기
     const getErrorMessage = (type: AgentType) => {
       switch (type) {
@@ -38,12 +39,15 @@ const JiraInput = forwardRef<HTMLInputElement, JiraInputProps>(
         <input
           ref={ref}
           type="text"
-          className={`bg-transparent border rounded-lg px-4 py-3 text-white placeholder-white/50 text-lg outline-none transition-colors w-full ${hasError
-            ? 'border-red-400 focus:border-red-500'
-            : 'border-white/30 focus:border-white/60'
+          className={`bg-transparent border rounded-lg px-4 py-3 text-white placeholder-white/50 text-lg outline-none transition-all duration-200 w-full ${disabled
+            ? 'opacity-50 cursor-not-allowed border-white/20'
+            : hasError
+              ? 'border-red-400 focus:border-red-500'
+              : 'border-white/30 focus:border-white/60'
             }`}
-          placeholder={placeholder}
+          placeholder={disabled ? 'B tv Agent가 응답을 생성 중입니다...' : placeholder}
           value={value}
+          disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={onKeyDown}
           style={{

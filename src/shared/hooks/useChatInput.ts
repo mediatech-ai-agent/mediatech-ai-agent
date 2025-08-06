@@ -13,6 +13,7 @@ export const useChatInput = () => {
     setJiraNumber,
     removeJiraNumber,
     currentSession,
+    isAiResponding,
   } = useChatStore();
 
   const requestAgent = useRequestAgent();
@@ -340,6 +341,7 @@ export const useChatInput = () => {
     hasJiraNumber,
     isIssueKeyMode,
     ableSendMessage,
+    isAiResponding,
 
     // Handlers
     handleChange,

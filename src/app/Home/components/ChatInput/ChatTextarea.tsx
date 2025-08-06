@@ -5,6 +5,7 @@ interface ChatTextareaProps {
   placeholder: string;
   jiraCardWidth: number;
   hasJiraNumber: boolean;
+  disabled?: boolean;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onCompositionStart: () => void;
@@ -18,6 +19,7 @@ const ChatTextarea = forwardRef<HTMLTextAreaElement, ChatTextareaProps>(
       placeholder,
       jiraCardWidth,
       hasJiraNumber,
+      disabled = false,
       onChange,
       onKeyDown,
       onCompositionStart,
@@ -28,9 +30,11 @@ const ChatTextarea = forwardRef<HTMLTextAreaElement, ChatTextareaProps>(
     return (
       <textarea
         ref={ref}
-        className="w-full bg-transparent text-white placeholder-white/70 text-lg outline-none resize-none"
-        placeholder={placeholder}
+        className={`w-full bg-transparent text-white placeholder-white/70 text-lg outline-none resize-none transition-opacity duration-200 ${disabled ? 'cursor-not-allowed opacity-50' : ''
+          }`}
+        placeholder={disabled ? 'B tv Agent가 응답을 생성 중입니다...' : placeholder}
         value={value}
+        disabled={disabled}
         onChange={onChange}
         onKeyDown={onKeyDown}
         onCompositionStart={onCompositionStart}
