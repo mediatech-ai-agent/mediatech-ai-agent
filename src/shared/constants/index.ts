@@ -1,6 +1,6 @@
 export const ICON_PATH = {
   SIDE_MENU: {
-    MENU: `${import.meta.env.BASE_URL}/assets/sideMenu/ic_menu_nor.png`,
+    MENU: `${import.meta.env.BASE_URL}assets/sideMenu/ic_menu_nor.png`,
     NEW_CHAT: `${import.meta.env.BASE_URL}assets/sideMenu/ic_new_nor.png`,
     JIRA: `${import.meta.env.BASE_URL}assets/sideMenu/ic_jira_nor.png`,
     CR: `${import.meta.env.BASE_URL}assets/sideMenu/ic_cr_nor.png`,
