@@ -19,14 +19,14 @@ COPY . .
 # 프로덕션 빌드
 RUN yarn build:production
 
+# 빌드 결과 확인 (빌드 실패 시 Docker 빌드도 실패)
+RUN ls -la /app/dist && echo "Build successful: dist folder found" || (echo "Build failed: dist folder not found" && exit 1)
+
 # PM2와 serve를 글로벌 설치
 RUN npm install -g pm2 serve
 
 # 포트 노출
 EXPOSE 3001
-
-# 빌드 결과 확인을 위한 디버그
-RUN ls -la /app/dist || echo "dist folder not found"
 
 # PM2 설정 파일 복사
 COPY ecosystem.config.cjs .
