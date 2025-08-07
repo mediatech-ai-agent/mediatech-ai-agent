@@ -3,7 +3,11 @@ import { useChatStore } from '@/stores/chatStore.ts';
 import { ICON_PATH } from '@/shared/constants';
 import type { AgentType } from '@/shared/utils/common.ts';
 
-const ChatHeader: React.FC = () => {
+interface ChatHeaderProps {
+  isMobile?: boolean;
+}
+
+const ChatHeader: React.FC<ChatHeaderProps> = ({ isMobile = false }) => {
   const { currentSession } = useChatStore();
   const [imageError, setImageError] = React.useState(false);
 
@@ -52,7 +56,7 @@ const ChatHeader: React.FC = () => {
 
   return (
     <div
-      className="flex absolute top-0 right-0 left-0 z-10 items-center px-6 transition-all duration-300"
+      className={`flex absolute top-0 right-0 left-0 z-10 items-center transition-all duration-300 ${isMobile ? 'px-0' : 'px-6'}`}
       style={{
         height: hasUserMessage ? '44px' : '69px',
         width: '100%',

@@ -1,7 +1,8 @@
 import { useMemo, useCallback, useRef, useEffect, useState } from 'react';
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, Menu } from 'lucide-react';
 import { ICON_PATH } from '@/shared/constants';
 import { useSidebarToggle } from '@/shared/hooks/useSidebarToggle';
+import { useMobileMenu } from '@/shared/hooks/useMobileMenu';
 import {
   MENU_HEADER_ITEMS,
   MENU_ITEMS,
@@ -40,11 +41,144 @@ const getSourceIcon = (source: string): string | undefined => {
   }
 };
 
+// 스타일 유틸리티 함수들
+const getMainStyles = (isMobile: boolean, isCollapsed: boolean) => {
+  if (isMobile) {
+    return {};
+  }
+
+  return {
+    // 데스크탑에서만 인라인 스타일 적용
+    left: `calc((${isCollapsed ? '292px' : '480px'} + 100vw) / 2)`,
+    right: 'clamp(100px, 14vw, 200px)',
+    transform: 'translateX(-50%)',
+    width: 'auto',
+    height: '810px',
+    minWidth: '1192px',
+  };
+};
+
+const getMainClassName = (isMobile: boolean, hasMessages: boolean) => {
+  return `fixed top-1/2 custom-scrollbar transition-all duration-300 flex flex-col ${isMobile ? '-translate-y-1/10' : '-translate-y-1/2'
+    } ${hasMessages ? '' : 'items-center justify-center'}`;
+};
+
+const getAgentCardGridContainerStyles = (isMobile: boolean) => {
+  if (isMobile) {
+    return {
+      top: '60px',
+      left: 0,
+      right: 0,
+      bottom: '160px',
+    };
+  }
+
+  return { top: '-250px' };
+};
+
+const getAgentCardGridStyles = (isMobile: boolean) => {
+  if (isMobile) {
+    return {
+      width: '320px',
+      maxWidth: '320px',
+    };
+  }
+
+  return {};
+};
+
+const getChatHeaderStyles = (isMobile: boolean) => {
+  if (isMobile) {
+    return {
+      position: 'absolute' as const,
+      top: '140px',
+      left: '0px',
+      right: '10px',
+      padding: '0',
+      textAlign: 'left' as const,
+    };
+  }
+
+  return {};
+};
+
+const getChatMessagesStyles = (isMobile: boolean) => {
+  return {
+    position: 'absolute' as const,
+    top: isMobile ? '220px' : '60px',
+    left: '0',
+    right: '0',
+    bottom: isMobile ? '160px' : '266px',
+    paddingLeft: isMobile ? '20px' : '32px',
+    paddingRight: isMobile ? '20px' : '32px',
+    paddingBottom: '20px',
+    textAlign: isMobile ? ('left' as const) : ('inherit' as const),
+  };
+};
+
+const getScrollToBottomStyles = (isMobile: boolean) => {
+  return {
+    width: '36px',
+    height: '36px',
+    bottom: isMobile ? '200px' : '276px',
+  };
+};
+
+const getContainerStyles = (isMobile: boolean) => {
+  return isMobile ? { paddingBottom: '160px' } : {};
+};
+
+// 컴포넌트 렌더링 유틸리티 함수들
+const renderSideMenu = (
+  isMobile: boolean,
+  isCollapsed: boolean,
+  toggle: () => void,
+  historyItems: Array<{ id: string; title: string; icon: string; isSaved: boolean }>,
+  handleMenuClick: (id: string) => void,
+  handleHistoryClick: (id: string) => void,
+  handleHistorySaveToggle: (id: string) => void,
+  isMobileMenuOpen: boolean,
+  closeMobileMenu: () => void
+) => {
+  const sideMenuProps = {
+    title: "B tv Agent",
+    headerIcon: ICON_PATH.SIDE_MENU.MENU,
+    isCollapsed,
+    onToggle: toggle,
+    menuHeaderItems: MENU_HEADER_ITEMS,
+    menuItems: MENU_ITEMS,
+    historyItems,
+    onMenuItemClick: handleMenuClick,
+    onHistoryItemClick: handleHistoryClick,
+    onHistorySaveToggle: handleHistorySaveToggle,
+    isMobile,
+    isMobileMenuOpen,
+    onMobileMenuClose: closeMobileMenu,
+  };
+
+  if (isMobile) {
+    return <SideMenu {...sideMenuProps} />;
+  }
+
+  return (
+    <aside
+      className="fixed top-1/2 transition-all duration-300 -translate-y-1/2 left-side-menu"
+      style={{
+        left: 'clamp(100px, 4.5vw, 100px)', // 반응형
+        height: '810px', // 반응형
+      }}
+    >
+      <SideMenu {...sideMenuProps} />
+    </aside>
+  );
+};
+
 const Home = () => {
   const messages = useCurrentMessages();
   const sessions = useChatSessions();
   const { togglePinSession, currentSession, isAiResponding } = useChatStore();
   const isSessionLoading = useIsSessionLoading();
+  const { isMobile, isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useMobileMenu();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [aiResponseStartTime, setAiResponseStartTime] = useState<number | null>(
@@ -352,53 +486,47 @@ const Home = () => {
   }, [currentSession?.id, isSessionLoading]);
 
   return (
-    <div className="overflow-hidden relative min-h-screen">
-      <aside
-        className="fixed top-1/2 transition-all duration-300 -translate-y-1/2 left-side-menu"
-        style={{
-          left: 'clamp(100px, 4.5vw, 100px)', // 반응형
-          height: '810px', // 반응형
-        }}
-      >
-        <SideMenu
-          title="B tv Agent"
-          headerIcon={ICON_PATH.SIDE_MENU.MENU}
-          isCollapsed={isCollapsed}
-          onToggle={toggle}
-          menuHeaderItems={MENU_HEADER_ITEMS}
-          menuItems={MENU_ITEMS}
-          historyItems={historyItems}
-          onMenuItemClick={handleMenuClick}
-          onHistoryItemClick={handleHistoryClick}
-          onHistorySaveToggle={handleHistorySaveToggle}
-        />
-      </aside>
+    <div
+      className="overflow-hidden relative min-h-screen"
+      style={getContainerStyles(isMobile)}
+    >
+      {/* SideMenu 렌더링 - 모바일/데스크탑 조건부 */}
+      {renderSideMenu(
+        isMobile,
+        isCollapsed,
+        toggle,
+        historyItems,
+        handleMenuClick,
+        handleHistoryClick,
+        handleHistorySaveToggle,
+        isMobileMenuOpen,
+        closeMobileMenu
+      )}
+
+      {/* 모바일 햄버거 메뉴 버튼 */}
+      {isMobile && !isMobileMenuOpen && (
+        <button
+          onClick={toggleMobileMenu}
+          className="fixed top-4 left-4 p-3 rounded-lg transition-all duration-200 hover:bg-white/10"
+          style={{ zIndex: 9999 }} // 최상위 레이어
+          aria-label="메뉴 열기"
+        >
+          <Menu size={24} className="text-white" />
+        </button>
+      )}
 
       <main
-        className={`fixed top-1/2 -translate-y-1/2 custom-scrollbar transition-all duration-300 flex flex-col ${messages.length === 0 ? 'items-center justify-center' : ''
-          }`}
-        style={{
-          left: `calc((${isCollapsed ? '292px' : '480px'} + 100vw) / 2)`, // 사이드바 접힘 상태에 따른 동적 left (100px + 92px + 100px) vs (100px + 280px + 100px)
-          right: 'clamp(100px, 14vw, 200px)', // 반응형
-          transform: 'translateX(-50%)',
-          width: 'auto', // 자동 너비
-          height: '810px', // 반응형
-          minWidth: '1192px', // 반응형
-        }}
+        className={getMainClassName(isMobile, messages.length > 0)}
+        style={getMainStyles(isMobile, isCollapsed)}
       >
         {messages.length === 0 && (
           <div
-            className="flex absolute inset-0 justify-center items-center agent-cards-wrapper"
-            style={{
-              paddingBottom: 'clamp(286px, 30vh, 350px)', // ChatInput 높이 + 여백
-              paddingTop: '0',
-            }}
+            className={`flex absolute justify-center items-center ${!isMobile ? 'inset-0 agent-cards-wrapper' : ''}`}
+            style={getAgentCardGridContainerStyles(isMobile)}
           >
             <div
               className="agent-card-grid-container"
-              style={{
-                width: '100%',
-              }}
+              style={getAgentCardGridStyles(isMobile)}
             >
               <AgentCardGrid />
             </div>
@@ -406,24 +534,21 @@ const Home = () => {
         )}
         {messages.length > 0 && (
           <>
-            <ChatHeader />
+            <div
+              className={isMobile ? 'chat-header-container' : ''}
+              style={getChatHeaderStyles(isMobile)}
+            >
+              <ChatHeader isMobile={isMobile} />
+            </div>
             <div
               ref={scrollContainerRef}
-              className="overflow-y-auto relative custom-scrollbar"
-              style={{
-                position: 'absolute',
-                top: '60px', // ChatHeader 높이 고려
-                left: '0',
-                right: '0',
-                bottom: '266px', // 브라우저 바닥에서 316px 위까지
-                paddingLeft: '32px',
-                paddingRight: '32px',
-                paddingBottom: '20px',
-              }}
+              className={`overflow-y-auto relative custom-scrollbar ${isMobile ? 'chat-messages-container' : ''}`}
+              style={getChatMessagesStyles(isMobile)}
             >
               <ChatMessages
                 scrollContainerRef={scrollContainerRef}
                 onShowSources={handleShowSourceContainer}
+                isMobile={isMobile}
               />
             </div>
 
@@ -431,12 +556,8 @@ const Home = () => {
             {showScrollToBottom && (
               <button
                 onClick={scrollToBottom}
-                className="absolute left-1/2 z-10 p-2 rounded-full shadow-lg backdrop-blur-md transition-all duration-200 transform -translate-x-1/2 bg-white/20 hover:bg-white/30 hover:shadow-xl"
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  bottom: '276px', // ChatInput 영역(266px) + 10px 여백
-                }}
+                className={`absolute left-1/2 z-10 p-2 rounded-full shadow-lg backdrop-blur-md transition-all duration-200 transform -translate-x-1/2 bg-white/20 hover:bg-white/30 hover:shadow-xl ${isMobile ? 'scroll-to-bottom-mobile' : ''}`}
+                style={getScrollToBottomStyles(isMobile)}
                 aria-label="맨 아래로 스크롤"
               >
                 <ArrowDown size={18} className="m-auto text-white" />
@@ -444,7 +565,9 @@ const Home = () => {
             )}
           </>
         )}
-        <ChatInput />
+
+        {/* 데스크탑에서는 원래 위치에 ChatInput 렌더링 */}
+        {!isMobile && <ChatInput />}
       </main>
 
       {/* SourceContainer - API 응답의 meta_data가 있을 때만 렌더링 */}
@@ -455,8 +578,12 @@ const Home = () => {
           isVisible={isSourceContainerVisible}
           onClose={handleCloseSourceContainer}
           onOutsideClick={handleSourceContainerOutsideClick}
+          isMobile={isMobile}
         />
       )}
+
+      {/* ChatInput - 모바일일 때만 여기서 렌더링 */}
+      {isMobile && <ChatInput />}
     </div>
   );
 };

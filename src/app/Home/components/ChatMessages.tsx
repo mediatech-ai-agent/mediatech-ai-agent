@@ -17,6 +17,7 @@ interface ChatMessagesProps {
     title: string;
     url: string;
   }>) => void;
+  isMobile?: boolean;
 }
 
 // HTML 렌더링 컴포넌트 (타이핑 효과 포함)
@@ -65,7 +66,7 @@ const TypewriterMarkdownRenderer = ({
   );
 };
 
-const ChatMessages = ({ scrollContainerRef, onShowSources }: ChatMessagesProps) => {
+const ChatMessages = ({ scrollContainerRef, onShowSources, isMobile = false }: ChatMessagesProps) => {
   const messages = useCurrentMessages();
   const { currentSession, isAiResponding } = useChatStore();
   const isSessionLoading = useIsSessionLoading();
@@ -276,13 +277,14 @@ const ChatMessages = ({ scrollContainerRef, onShowSources }: ChatMessagesProps) 
         msg.sender === 'ai' ? (
           <div
             key={msg.id}
-            className="mt-10 mb-6 text-left w-fit"
+            className={`mt-10 mb-6 text-left ${isMobile ? 'w-full' : 'w-fit'}`}
             data-message-id={msg.id}
+            style={isMobile ? { textAlign: 'left', display: 'block', width: '100%' } : {}}
           >
             {currentSession?.agentMode === 'cr' ? (
               <HtmlRenderer
                 content={msg.content}
-                className="inline-block"
+                className={isMobile ? "block w-full text-left" : "inline-block"}
                 enableTyping={
                   msg.id === newMessageId ||
                   // 임시 세션의 안내메시지
@@ -294,7 +296,7 @@ const ChatMessages = ({ scrollContainerRef, onShowSources }: ChatMessagesProps) 
             ) : (
               <TypewriterMarkdownRenderer
                 content={msg.content}
-                className="inline-block"
+                className={isMobile ? "block w-full text-left" : "inline-block"}
                 enableTyping={
                   msg.id === newMessageId ||
                   // 임시 세션의 안내메시지

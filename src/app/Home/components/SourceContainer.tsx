@@ -17,6 +17,7 @@ interface SourceContainerProps {
     onClose?: () => void;
     onOutsideClick?: () => void;
     className?: string;
+    isMobile?: boolean;
 }
 
 /**
@@ -42,7 +43,8 @@ const SourceContainer: React.FC<SourceContainerProps> = ({
     isVisible = true,
     onClose,
     onOutsideClick,
-    className = ''
+    className = '',
+    isMobile = false
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -70,16 +72,19 @@ const SourceContainer: React.FC<SourceContainerProps> = ({
     return (
         <div
             ref={containerRef}
-            className={`overflow-y-auto fixed top-0 right-0 border shadow-2xl custom-scrollbar border-indigo-400/50 ${className}`}
+            className={`overflow-y-auto fixed top-0 right-0 border shadow-2xl custom-scrollbar border-indigo-400/50 ${className} ${isMobile ? 'source-container-mobile' : ''}`}
             style={{
                 backgroundColor: 'rgba(12, 18, 79, 0.7)', // #0c124f with 70% opacity
                 borderColor: '#6271c7',
                 backdropFilter: 'blur(6px)',
                 WebkitBackdropFilter: 'blur(6px)',
-                width: '391px',
-                height: '100vh', // 화면 전체 높이
-                borderRadius: '0', // 화면에 붙어있으므로 둥근 모서리 제거
-                padding: '32px', // 피그마 기준 32px 패딩
+                width: isMobile ? 'calc(100vw - 20px)' : '391px',
+                height: isMobile ? 'calc(100vh - 200px)' : '100vh',
+                borderRadius: isMobile ? '16px' : '0', // 모바일에서는 둥근 모서리
+                padding: isMobile ? '20px' : '32px',
+                top: isMobile ? '60px' : '0',
+                right: isMobile ? '10px' : '0',
+                zIndex: 10000, // 최상단 레이어
             }}
         >
             {/* Header with title and close button */}

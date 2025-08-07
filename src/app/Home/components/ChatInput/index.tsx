@@ -55,20 +55,11 @@ const ChatInput = () => {
 
   return (
     <div
-      className="overflow-hidden fixed bottom-0 chat-input-container"
+      className="chat-input-container"
       style={{
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: 'clamp(1192px, 80vw, 1400px)',
-        maxWidth: '1192px',
-        minHeight: '236px',
-        maxHeight: '800px',
         background: 'rgba(255, 255, 255, 0.3)',
         backdropFilter: 'blur(6px)',
         WebkitBackdropFilter: 'blur(6px)',
-        borderRadius: '24px',
-        zIndex: 10,
-        padding: '32px 40px',
         boxSizing: 'border-box',
       }}
     >
