@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://mediatech-ai-agent.github.io/mediatech-ai-agent/",
+  "homepage": "http://btv-agent.oyg.me:3001/",
   "scripts": {
     "dev": "vite",
     "dev:local": "vite --mode localenv",
