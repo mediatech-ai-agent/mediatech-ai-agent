@@ -16,7 +16,7 @@ export default defineConfig({
     host: true, // 외부 접근 허용
     proxy: {
       '/api': {
-        target: 'https://1.255.86.189:8080',
+        target: 'http://1.255.86.189:8080',
         changeOrigin: true,
         secure: false, // SSL 인증서 검증 비활성화 (자체 서명 인증서 대응)
 
