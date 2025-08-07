@@ -1,10 +1,10 @@
 import {
-  useCurrentMessages,
   useChatStore,
+  useCurrentMessages,
   useIsSessionLoading,
 } from '@/stores/chatStore.ts';
-import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import MarkdownRenderer from '../../../shared/components/MarkdownRenderer';
 import { useTypewriter } from '../../../shared/hooks/useTypewriter';
 import ChatActions from './ChatActions';
@@ -12,11 +12,13 @@ import TypingIndicator from './TypingIndicator';
 
 interface ChatMessagesProps {
   scrollContainerRef: RefObject<HTMLDivElement | null>;
-  onShowSources?: (metaData: Array<{
-    source: string;
-    title: string;
-    url: string;
-  }>) => void;
+  onShowSources?: (
+    metaData: Array<{
+      source: string;
+      title: string;
+      url: string;
+    }>
+  ) => void;
   isMobile?: boolean;
 }
 
@@ -66,7 +68,11 @@ const TypewriterMarkdownRenderer = ({
   );
 };
 
-const ChatMessages = ({ scrollContainerRef, onShowSources, isMobile = false }: ChatMessagesProps) => {
+const ChatMessages = ({
+  scrollContainerRef,
+  onShowSources,
+  isMobile = false,
+}: ChatMessagesProps) => {
   const messages = useCurrentMessages();
   const { currentSession, isAiResponding } = useChatStore();
   const isSessionLoading = useIsSessionLoading();
@@ -159,12 +165,10 @@ const ChatMessages = ({ scrollContainerRef, onShowSources, isMobile = false }: C
             );
 
             if (lastMessageElement) {
-              const containerRect = container.getBoundingClientRect();
-              const elementRect = lastMessageElement.getBoundingClientRect();
-              const scrollTop =
-                container.scrollTop + elementRect.top - containerRect.top - 20;
-
-              container.scrollTo({ top: scrollTop, behavior: 'smooth' });
+              lastMessageElement.scrollIntoView({
+                block: 'start',
+                behavior: 'smooth',
+              });
               setUserScrollPosition(null);
             }
           }, 100);
@@ -272,19 +276,23 @@ const ChatMessages = ({ scrollContainerRef, onShowSources, isMobile = false }: C
   }
 
   return (
-    <div>
+    <div className="pb-80">
       {messages.map((msg) =>
         msg.sender === 'ai' ? (
           <div
             key={msg.id}
             className={`mt-10 mb-6 text-left ${isMobile ? 'w-full' : 'w-fit'}`}
             data-message-id={msg.id}
-            style={isMobile ? { textAlign: 'left', display: 'block', width: '100%' } : {}}
+            style={
+              isMobile
+                ? { textAlign: 'left', display: 'block', width: '100%' }
+                : {}
+            }
           >
             {currentSession?.agentMode === 'cr' ? (
               <HtmlRenderer
                 content={msg.content}
-                className={isMobile ? "block w-full text-left" : "inline-block"}
+                className={isMobile ? 'block w-full text-left' : 'inline-block'}
                 enableTyping={
                   msg.id === newMessageId ||
                   // 임시 세션의 안내메시지
@@ -296,7 +304,7 @@ const ChatMessages = ({ scrollContainerRef, onShowSources, isMobile = false }: C
             ) : (
               <TypewriterMarkdownRenderer
                 content={msg.content}
-                className={isMobile ? "block w-full text-left" : "inline-block"}
+                className={isMobile ? 'block w-full text-left' : 'inline-block'}
                 enableTyping={
                   msg.id === newMessageId ||
                   // 임시 세션의 안내메시지
@@ -312,7 +320,11 @@ const ChatMessages = ({ scrollContainerRef, onShowSources, isMobile = false }: C
               <ChatActions
                 textContent={msg.content}
                 metaData={msg.sourceMetaData || []}
-                onShowSources={msg.sourceMetaData ? () => onShowSources?.(msg.sourceMetaData!) : undefined}
+                onShowSources={
+                  msg.sourceMetaData
+                    ? () => onShowSources?.(msg.sourceMetaData!)
+                    : undefined
+                }
               />
             )}
           </div>
