@@ -290,7 +290,7 @@ export const useChatInput = () => {
   };
 
   const getPlaceholder = () => {
-    const ticketPlaceholder = '에 대해 무엇이든 물어보세요';
+    const ticketPlaceholder = '에 대해 무엇이든 물어보세요.';
     if (hasJiraNumber) return ticketPlaceholder;
 
     switch (currentSession?.agentMode) {

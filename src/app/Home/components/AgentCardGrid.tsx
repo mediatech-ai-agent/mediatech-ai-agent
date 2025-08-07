@@ -20,7 +20,7 @@ const AgentCardGrid = () => {
 
   return (
     <div
-      className="agent-card-grid w-full mx-auto"
+      className="mx-auto w-full agent-card-grid"
       style={{
         display: 'grid',
         maxWidth: 'var(--chatinput-max-width)',
@@ -28,7 +28,7 @@ const AgentCardGrid = () => {
     >
       <AgentCard
         title="Jira 요약하기"
-        description="CR, BR 링크를 첨부해서\n댓글 요약, 히스토리 요청해 보세요"
+        description="CR, BR 링크를 첨부해서\n댓글 요약, 히스토리 요청해 보세요."
         imageName="btn_jira"
         gradientColors={{
           primary: 'rgba(153, 211, 255, 0.2)',
@@ -41,7 +41,7 @@ const AgentCardGrid = () => {
 
       <AgentCard
         title="CR 생성하기"
-        description="BR 링크를 첨부해서\nCR 초안 작성을 요청해 보세요"
+        description="BR 링크를 첨부해서\nCR 초안 작성을 요청해 보세요."
         imageName="btn_cr"
         gradientColors={{
           primary: 'rgba(255, 165, 230, 0.2)',
@@ -54,7 +54,7 @@ const AgentCardGrid = () => {
 
       <AgentCard
         title="정책 문의하기"
-        description="B tv 서비스 / UI 정책을 물어보세요\nFigma, Confluence 기반으로\n답변해 드려요"
+        description="B tv 서비스 / UI 정책을 물어보세요.\nFigma, Confluence 기반으로\n답변해 드려요."
         imageName="btn_polish"
         gradientColors={{
           primary: 'rgba(167, 178, 255, 0.2)',
@@ -67,7 +67,7 @@ const AgentCardGrid = () => {
 
       <AgentCard
         title="담당자 찾기"
-        description="특정 서비스/기능 관련\nUI, GUI, 개발 담당자를 물어보세요"
+        description="특정 서비스/기능 관련\nUI, GUI, 개발 담당자를 물어보세요."
         imageName="btn_person"
         gradientColors={{
           primary: 'rgba(199, 220, 255, 0.2)',
