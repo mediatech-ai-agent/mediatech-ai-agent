@@ -18,6 +18,7 @@ interface ChatMessagesProps {
     url: string;
   }>) => void;
   isMobile?: boolean;
+  onTypingStateChange?: (isTyping: boolean) => void;
 }
 
 // HTML 렌더링 컴포넌트 (타이핑 효과 포함)
@@ -66,7 +67,7 @@ const TypewriterMarkdownRenderer = ({
   );
 };
 
-const ChatMessages = ({ scrollContainerRef, onShowSources, isMobile = false }: ChatMessagesProps) => {
+const ChatMessages = ({ scrollContainerRef, onShowSources, isMobile = false, onTypingStateChange }: ChatMessagesProps) => {
   const messages = useCurrentMessages();
   const { currentSession, isAiResponding } = useChatStore();
   const isSessionLoading = useIsSessionLoading();
@@ -79,6 +80,12 @@ const ChatMessages = ({ scrollContainerRef, onShowSources, isMobile = false }: C
     null
   );
   const [isUserScrolling, setIsUserScrolling] = useState(false);
+
+  // 타이핑 상태 변화를 부모 컴포넌트에 알림
+  useEffect(() => {
+    const isTyping = newMessageId !== null;
+    onTypingStateChange?.(isTyping);
+  }, [newMessageId, onTypingStateChange]);
 
   // 사용자 스크롤 감지
   useEffect(() => {

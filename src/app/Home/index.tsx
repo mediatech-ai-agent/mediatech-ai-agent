@@ -176,16 +176,25 @@ const renderSideMenu = (
 const Home = () => {
   const messages = useCurrentMessages();
   const sessions = useChatSessions();
-  const { togglePinSession, currentSession, isAiResponding } = useChatStore();
+  const { togglePinSession, currentSession } = useChatStore();
   const isSessionLoading = useIsSessionLoading();
   const { isMobile, isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useMobileMenu();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-  const [aiResponseStartTime, setAiResponseStartTime] = useState<number | null>(
-    null
-  );
-  const [userHasScrolled, setUserHasScrolled] = useState(false);
-  const lastScrollTopRef = useRef<number>(0);
+  const [isTyping, setIsTyping] = useState(false);
+  
+  // AI 타이핑 중에만 모든 상태 변경을 차단하는 보호된 setter
+  const setShowScrollToBottomProtected = useCallback((value: boolean) => {
+    if (isTyping) {
+      return;
+    }
+
+    if (showScrollToBottom === value) {
+      return;
+    }
+
+    setShowScrollToBottom(value);
+  }, [isTyping, showScrollToBottom]);
 
   // SourceContainer 상태 관리
   const [isSourceContainerVisible, setIsSourceContainerVisible] = useState(false);
@@ -228,27 +237,16 @@ const Home = () => {
   const { handleMenuClick, handleHistoryClick } = useSidebarController();
   const { isCollapsed, toggle } = useSidebarToggle();
 
-  // AI 응답 상태 및 시작 시간 추적
+  // AI 타이핑 상태 변화 감지
   useEffect(() => {
-    if (isAiResponding) {
-      // AI 응답 시작 시간 기록
-      const startTime = Date.now();
-      setAiResponseStartTime(startTime);
-      setUserHasScrolled(false); // 사용자 스크롤 상태 초기화
-      // 현재 스크롤 위치 기록
-      if (scrollContainerRef.current) {
-        lastScrollTopRef.current = scrollContainerRef.current.scrollTop;
-      }
+    if (isTyping) {
+      setShowScrollToBottom(true);
     } else {
-      // AI 응답 완료 시 시작 시간 초기화
-      setAiResponseStartTime(null);
-      setUserHasScrolled(false);
-      // 응답 완료 후 즉시 한 번 체크
       setTimeout(() => {
         checkScrollPositionImmediate();
       }, 100);
     }
-  }, [isAiResponding]);
+  }, [isTyping, setShowScrollToBottomProtected]);
 
   // 메시지에서 RequestAgentResponse 감지하여 SourceContainer 데이터 설정
   useEffect(() => {
@@ -339,93 +337,62 @@ const Home = () => {
     }
   }, []);
 
-  // 디바운싱을 위한 ref
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 스크롤 위치 체크 함수 (스마트 디바운싱 적용)
+  // 스크롤 위치 체크 함수 (AI 타이핑 중에는 무조건 true)
   const checkScrollPosition = useCallback(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    const currentScrollTop = container.scrollTop;
-
-    // 사용자가 직접 스크롤했는지 감지
-    if (aiResponseStartTime && !userHasScrolled) {
-      const scrollDiff = Math.abs(currentScrollTop - lastScrollTopRef.current);
-      if (scrollDiff > 50) {
-        // 50px 이상 변화면 사용자 스크롤로 판단
-        setUserHasScrolled(true);
-      }
-    }
-
-    // 사용자가 스크롤했거나 AI 응답이 끝났으면 즉시 체크
-    const shouldCheckImmediately = userHasScrolled || !isAiResponding;
-
-    if (shouldCheckImmediately) {
-      checkScrollPositionImmediate();
+    if (isTyping) {
+      setShowScrollToBottomProtected(true);
       return;
     }
 
-    // AI 응답 중이고 사용자 스크롤이 없으면 디바운싱 적용
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
+    checkScrollPositionImmediate();
+  }, [isTyping, setShowScrollToBottomProtected]);
 
-    debounceTimeoutRef.current = setTimeout(() => {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 20; // 여유분 통일
-      const shouldShowButton = !isAtBottom;
-
-      setShowScrollToBottom(shouldShowButton);
-    }, 800); // 디바운싱 시간을 800ms로 증가
-  }, [isAiResponding, aiResponseStartTime, userHasScrolled]);
-
-  // 즉시 스크롤 위치 체크 함수 (사용자 스크롤용)
-  const checkScrollPositionImmediate = () => {
+  // 즉시 스크롤 위치 체크 함수 (AI 타이핑 중에는 무조건 true 유지)
+  const checkScrollPositionImmediate = useCallback(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
+    if (isTyping) {
+      setShowScrollToBottomProtected(true);
+      return;
+    }
+
     const { scrollTop, scrollHeight, clientHeight } = container;
-    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 20; // 여유분을 20px로 줄임
+    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 20;
     const shouldShowButton = !isAtBottom;
 
-    setShowScrollToBottom(shouldShowButton);
-  };
+    setShowScrollToBottomProtected(shouldShowButton);
+  }, [isTyping, setShowScrollToBottomProtected]);
 
-  // 스크롤 위치 감지 (사용자 스크롤은 즉시 반응)
+  // 스크롤 위치 감지 (AI 응답 중에는 무조건 버튼 표시)
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
     const handleScroll = () => {
-      // 사용자가 직접 스크롤했다고 표시
-      if (isAiResponding) {
-        setUserHasScrolled(true);
+      if (isTyping) {
+        setShowScrollToBottomProtected(true);
+        return;
       }
-      checkScrollPositionImmediate(); // 즉시 체크
+      checkScrollPositionImmediate();
     };
 
     container.addEventListener('scroll', handleScroll, { passive: true });
 
-    // 초기 상태 확인
-    // checkScrollPositionImmediate();
-
     return () => {
       container.removeEventListener('scroll', handleScroll);
     };
-  }, [checkScrollPositionImmediate, isAiResponding]);
+  }, [isTyping, checkScrollPositionImmediate]);
 
   // 메시지 변경 시 스크롤 위치 체크 (디바운싱 적용)
   useEffect(() => {
     checkScrollPosition();
   }, [messages.length, checkScrollPosition]);
 
-  // AI 응답 완료 후 정리 (필요시)
-  useEffect(() => {
-    if (!isAiResponding && aiResponseStartTime) {
-      // 상태 정리 로직이 필요하면 여기에 추가
-    }
-  }, [isAiResponding, aiResponseStartTime]);
 
   // 타이핑 애니메이션 중 DOM 변화 감지 (디바운싱 적용)
   useEffect(() => {
@@ -433,7 +400,12 @@ const Home = () => {
     if (!container) return;
 
     const observer = new MutationObserver(() => {
-      checkScrollPosition(); // 디바운싱 적용된 체크
+      if (isTyping) {
+        setShowScrollToBottomProtected(true);
+        return;
+      }
+
+      checkScrollPosition();
     });
 
     observer.observe(container, {
@@ -444,13 +416,8 @@ const Home = () => {
 
     return () => {
       observer.disconnect();
-      // 디바운싱 타이머도 클리어
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-        debounceTimeoutRef.current = null;
-      }
     };
-  }, [checkScrollPosition]);
+  }, [checkScrollPosition, isTyping]);
 
   // 세션 로딩 완료 시 스크롤을 맨 아래로 이동
   useEffect(() => {
@@ -549,6 +516,7 @@ const Home = () => {
                 scrollContainerRef={scrollContainerRef}
                 onShowSources={handleShowSourceContainer}
                 isMobile={isMobile}
+                onTypingStateChange={setIsTyping}
               />
             </div>
 
