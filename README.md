@@ -250,8 +250,7 @@ AI 에이전트 선택 카드들
 
 ## 🌐 배포
 
-### GitHub Pages (개발용)
-- **URL**: https://mediatech-ai-agent.github.io/mediatech-ai-agent/
+- **URL**: http://btv-agent.oyg.me:3001/
 
 ### Docker 배포 (프로덕션)
 
